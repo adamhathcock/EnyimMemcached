@@ -3,18 +3,15 @@ using System.Text;
 using Enyim.Caching.Memcached.Results;
 using Enyim.Caching.Memcached.Results.Extensions;
 using Enyim.Caching.Memcached.Results.Helpers;
-using Microsoft.Extensions.Logging;
 
 namespace Enyim.Caching.Memcached.Protocol.Binary
 {
     public class GetOperation : BinarySingleItemOperation, IGetOperation
     {
-        private readonly ILogger _logger;
         private CacheItem result;
 
-        public GetOperation(string key, ILogger logger) : base(key)
+        public GetOperation(string key) : base(key)
         {
-            _logger = logger;
         }
 
         protected override BinaryRequest Build()

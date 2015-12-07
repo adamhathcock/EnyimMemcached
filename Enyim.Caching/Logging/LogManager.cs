@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
 
 namespace Enyim.Caching
 {
@@ -27,40 +28,16 @@ namespace Enyim.Caching
 	/// </example>
 	public static class LogManager
 	{
-		private static ILogFactory factory;
-
-        //TODO: Swith to Microsoft.Extensions.Logging
-        static LogManager()
-		{
-#if DEBUG
-            factory = new ConsoleLogFactory();
-#else
-            factory = new NullLoggerFactory();
-#endif
-            //			var section = ConfigurationManager.GetSection("enyim.com/log") as Enyim.Caching.Configuration.LoggerSection;
-            //			ILogFactory f = null;
-
-            //			if (section != null && section.LogFactory != null)
-            //			{
-            //				f = Enyim.Reflection.FastActivator.Create(section.LogFactory) as ILogFactory;
-            //			}
-            //#if !log4net
-            //			// use an empty logger if nothing is specified in the app.config
-            //			LogManager.factory = f ?? (ILogFactory)new NullLoggerFactory();
-            //#else
-            //			// use the log4net logger logger if nothing is specified in the app.config
-            //			LogManager.factory = f ?? (ILogFactory)new Log4NetLogFactory();
-            //#endif
-        }
+		private static ILogFactory factory = new NullLoggerFactory();
 
 		/// <summary>
 		/// Assigns a new logger factory programmatically.
 		/// </summary>
 		/// <param name="factory"></param>
-		public static void AssignFactory(ILogFactory factory)
+		public static void AssignFactory(ILoggerFactory factory)
 		{
 			if (factory == null) throw new ArgumentNullException("factory");
-			LogManager.factory = factory;
+			LogManager.factory = new EnyimLogFactory(factory);
 		}
 
 		/// <summary>
@@ -70,7 +47,7 @@ namespace Enyim.Caching
 		/// <returns></returns>
 		public static ILog GetLogger(Type type)
 		{
-			return factory.GetLogger(type);
+		    return factory.GetLogger(type);
 		}
 
 		/// <summary>
@@ -79,10 +56,15 @@ namespace Enyim.Caching
 		/// <param name="name"></param>
 		/// <returns></returns>
 		public static ILog GetLogger(string name)
-		{
-			return factory.GetLogger(name);
-		}
-	}
+        {
+            return factory.GetLogger(name);
+        }
+
+        public static ILog GetLogger<T>()
+        {
+            return factory.GetLogger<T>();
+        }
+    }
 }
 
 #region [ License information          ]

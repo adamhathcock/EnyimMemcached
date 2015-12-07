@@ -14,20 +14,18 @@ namespace Enyim.Caching.Memcached.Protocol.Binary
 	/// A node which is used by the BinaryPool. It implements the binary protocol's SASL auth. mechanism.
 	/// </summary>
 	public class BinaryNode : MemcachedNode
-	{
-        private readonly ILogger _logger;
+    {
+        private readonly ILog log = LogManager.GetLogger<PooledSocket>();
 
-		ISaslAuthenticationProvider authenticationProvider;
+        ISaslAuthenticationProvider authenticationProvider;
 
 		public BinaryNode(
             IPEndPoint endpoint, 
             ISocketPoolConfiguration config, 
-            ISaslAuthenticationProvider authenticationProvider,
-            ILogger logger)
-			: base(endpoint, config, logger)
+            ISaslAuthenticationProvider authenticationProvider)
+			: base(endpoint, config)
 		{
 			this.authenticationProvider = authenticationProvider;
-            _logger = logger;
 		}
 
 		/// <summary>
@@ -39,7 +37,7 @@ namespace Enyim.Caching.Memcached.Protocol.Binary
 
 			if (this.authenticationProvider != null && !this.Auth(retval))
 			{
-				_logger.LogError("Authentication failed: " + this.EndPoint);
+                log.Error("Authentication failed: " + this.EndPoint);
 
 				throw new SecurityException("auth failed: " + this.EndPoint);
 			}
@@ -68,7 +66,7 @@ namespace Enyim.Caching.Memcached.Protocol.Binary
 				}
 				else
 				{
-				    _logger.LogWarning("Authentication failed, return code: 0x{0:x}", currentStep.StatusCode);
+                    log.WarnFormat("Authentication failed, return code: 0x{0:x}", currentStep.StatusCode);
 
 					// invalid credentials or other error
 					return false;

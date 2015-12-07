@@ -9,7 +9,8 @@ namespace Enyim.Caching
 	{
 		ILog GetLogger(string name);
 		ILog GetLogger(Type type);
-	}
+        ILog GetLogger<T>();
+    }
 }
 
 #region [ License information          ]

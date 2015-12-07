@@ -40,10 +40,9 @@ namespace Enyim.Caching
         protected IMemcachedKeyTransformer KeyTransformer { get { return this.keyTransformer; } }
         protected ITranscoder Transcoder { get { return this.transcoder; } }
 
-        public MemcachedClient(ILoggerFactory logggerFactory)
+        public MemcachedClient()
         {
-            _loggger = logggerFactory.CreateLogger<MemcachedClient>();
-            IMemcachedClientConfiguration configuration = new MemcachedClientConfiguration(_loggger); 
+            IMemcachedClientConfiguration configuration = new MemcachedClientConfiguration(); 
             configuration.SocketPool.MinPoolSize = 20;
             configuration.SocketPool.MaxPoolSize = 1000;
             configuration.SocketPool.ConnectionTimeout = new TimeSpan(0, 0, 3);

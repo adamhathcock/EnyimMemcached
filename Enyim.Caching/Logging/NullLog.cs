@@ -2,10 +2,10 @@
 
 namespace Enyim.Caching
 {
-	/// <summary>
-	/// Creates an empty logger. Used when no other factories are installed.
-	/// </summary>
-	public class NullLoggerFactory : ILogFactory
+    /// <summary>
+    /// Creates an empty logger. Used when no other factories are installed.
+    /// </summary>
+    public class NullLoggerFactory : ILogFactory
 	{
 		ILog ILogFactory.GetLogger(string name)
 		{
@@ -17,7 +17,12 @@ namespace Enyim.Caching
 			return NullLogger.Instance;
 		}
 
-		#region [ NullLogger                   ]
+        public ILog GetLogger<T>()
+        {
+            return NullLogger.Instance;
+        }
+
+        #region [ NullLogger                   ]
 
 		private class NullLogger : ILog
 		{

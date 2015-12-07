@@ -16,7 +16,7 @@ namespace Enyim.Caching.Memcached
     [DebuggerDisplay("[ Address: {endpoint}, IsAlive = {IsAlive} ]")]
     public partial class PooledSocket : IDisposable
     {
-        private readonly ILogger _logger;
+        private readonly ILog log = LogManager.GetLogger<PooledSocket>();
 
         private bool isAlive;
         private Socket socket;
@@ -25,7 +25,7 @@ namespace Enyim.Caching.Memcached
         private Stream inputStream;
         private AsyncSocketHelper helper;
 
-        public PooledSocket(IPEndPoint endpoint, TimeSpan connectionTimeout, TimeSpan receiveTimeout, ILogger logger)
+        public PooledSocket(IPEndPoint endpoint, TimeSpan connectionTimeout, TimeSpan receiveTimeout)
         {
             this.isAlive = true;
 
@@ -52,8 +52,6 @@ namespace Enyim.Caching.Memcached
             this.endpoint = endpoint;
 
             this.inputStream = new BasicNetworkStream(socket);
-
-            _logger = logger;
         }
 
         private static void ConnectWithTimeout(Socket socket, IPEndPoint endpoint, int timeout)
@@ -100,19 +98,19 @@ namespace Enyim.Caching.Memcached
 
             if (available > 0)
             {
-                if (_logger.IsEnabled(LogLevel.Warning))
-                    _logger.LogWarning("Socket bound to {0} has {1} unread data! This is probably a bug in the code. InstanceID was {2}.", this.socket.RemoteEndPoint, available, this.InstanceId);
+                if (log.IsWarnEnabled)
+                    log.WarnFormat("Socket bound to {0} has {1} unread data! This is probably a bug in the code. InstanceID was {2}.", this.socket.RemoteEndPoint, available, this.InstanceId);
 
                 byte[] data = new byte[available];
 
                 this.Read(data, 0, available);
 
-                if (_logger.IsEnabled(LogLevel.Warning))
-                    _logger.LogWarning(Encoding.ASCII.GetString(data));
+                if (log.IsWarnEnabled)
+                    log.Warn(Encoding.ASCII.GetString(data));
             }
 
-            if (_logger.IsEnabled(LogLevel.Debug))
-                _logger.LogDebug("Socket {0} was reset", this.InstanceId);
+            if (log.IsDebugEnabled)
+                log.DebugFormat("Socket {0} was reset", this.InstanceId);
         }
 
         /// <summary>
@@ -161,7 +159,7 @@ namespace Enyim.Caching.Memcached
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(nameof(PooledSocket), e);
+                    log.Error(nameof(PooledSocket), e);
                 }
             }
             else

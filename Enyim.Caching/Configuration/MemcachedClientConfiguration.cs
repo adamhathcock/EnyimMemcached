@@ -4,7 +4,6 @@ using System.Net;
 using Enyim.Caching.Memcached;
 using Enyim.Reflection;
 using Enyim.Caching.Memcached.Protocol.Binary;
-using Microsoft.Extensions.Logging;
 
 namespace Enyim.Caching.Configuration
 {
@@ -17,14 +16,12 @@ namespace Enyim.Caching.Configuration
 		private Type nodeLocator;
 		private ITranscoder transcoder;
 		private IMemcachedKeyTransformer keyTransformer;
-        private ILogger _logger;
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="T:MemcachedClientConfiguration"/> class.
-		/// </summary>
-		public MemcachedClientConfiguration(ILogger logger, string host = "memcached", int port = 11211)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:MemcachedClientConfiguration"/> class.
+        /// </summary>
+        public MemcachedClientConfiguration(string host = "memcached", int port = 11211)
 		{
-            _logger = logger;
             this.Servers = new List<IPEndPoint>();
 
             this.Servers.Add(ConfigurationHelper.ResolveToEndPoint(host, port));
@@ -151,8 +148,8 @@ namespace Enyim.Caching.Configuration
 		{
 			switch (this.Protocol)
 			{
-				case MemcachedProtocol.Text: return new DefaultServerPool(this, new Memcached.Protocol.Text.TextOperationFactory(), _logger);
-				case MemcachedProtocol.Binary: return new BinaryPool(this, _logger);
+				case MemcachedProtocol.Text: return new DefaultServerPool(this, new Memcached.Protocol.Text.TextOperationFactory());
+				case MemcachedProtocol.Binary: return new BinaryPool(this);
 			}
 
 			throw new ArgumentOutOfRangeException("Unknown protocol: " + (int)this.Protocol);
