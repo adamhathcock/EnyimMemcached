@@ -2,24 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
 using Enyim.Caching.Memcached;
 using Enyim.Caching.Configuration;
 using Enyim.Caching;
 using System.Threading;
+using Xunit;
 
 namespace MemcachedTest
 {
-	[TestFixture]
 	public class FailurePolicyTest
 	{
-		[TestFixtureSetUp]
-		public void Setup()
-		{
-			log4net.Config.XmlConfigurator.Configure();
-		}
-
-		[TestCase]
+		[Fact]
 		public void TestIfCalled()
 		{
 			var config = new MemcachedClientConfiguration();
@@ -31,14 +24,14 @@ namespace MemcachedTest
 
 			var client = new MemcachedClient(config);
 
-			Assert.IsNull(client.Get("a"), "Get should have failed.");
+			Assert.Null(client.Get("a"));
 		}
 
 		class FakePolicy : INodeFailurePolicy, INodeFailurePolicyFactory
 		{
 			bool INodeFailurePolicy.ShouldFail()
 			{
-				Assert.IsTrue(true);
+				Assert.True(true);
 
 				return true;
 			}
@@ -49,7 +42,7 @@ namespace MemcachedTest
 			}
 		}
 
-		[TestCase]
+		[Fact]
 		public void TestThrottlingFailurePolicy()
 		{
 			var config = new MemcachedClientConfiguration();
@@ -67,23 +60,23 @@ namespace MemcachedTest
 
 			client.NodeFailed += node =>
 			{
-				Assert.IsTrue(canFail, "canfail");
+				Assert.True(canFail, "canfail");
 
 				didFail = true;
 			};
 
-			Assert.IsNull(client.Get("a"), "Get should have failed. 1");
-			Assert.IsNull(client.Get("a"), "Get should have failed. 2");
+			Assert.Null(client.Get("a"));
+			Assert.Null(client.Get("a"));
 
 			canFail = true;
 			Thread.Sleep(2000);
 
-			Assert.IsNull(client.Get("a"), "Get should have failed. 3");
-			Assert.IsNull(client.Get("a"), "Get should have failed. 4");
-			Assert.IsNull(client.Get("a"), "Get should have failed. 5");
-			Assert.IsNull(client.Get("a"), "Get should have failed. 6");
+            Assert.Null(client.Get("a"));
+            Assert.Null(client.Get("a"));
+            Assert.Null(client.Get("a"));
+            Assert.Null(client.Get("a"));
 
-			Assert.IsTrue(didFail, "didfail");
+            Assert.True(didFail, "didfail");
 		}
 	}
 }

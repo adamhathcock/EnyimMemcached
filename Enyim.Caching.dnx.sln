@@ -7,6 +7,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Enyim.Caching", "Enyim.Cach
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Enyim.Caching.Tests", "Enyim.Caching.Tests\Enyim.Caching.Tests.xproj", "{175363C0-799F-4E95-9852-750CAF9EE6F9}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MemcachedTest", "MemcachedTest\MemcachedTest.xproj", "{8E6C2C0C-B7CD-40BE-9164-96787885FBF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{175363C0-799F-4E95-9852-750CAF9EE6F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{175363C0-799F-4E95-9852-750CAF9EE6F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{175363C0-799F-4E95-9852-750CAF9EE6F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E6C2C0C-B7CD-40BE-9164-96787885FBF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E6C2C0C-B7CD-40BE-9164-96787885FBF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E6C2C0C-B7CD-40BE-9164-96787885FBF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E6C2C0C-B7CD-40BE-9164-96787885FBF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

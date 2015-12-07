@@ -1,45 +1,47 @@
 using Enyim.Caching;
-using NUnit.Framework;
+using Enyim.Caching.Configuration;
 using Enyim.Caching.Memcached;
+using Xunit;
 
 namespace MemcachedTest
 {
-	[TestFixture]
 	public class TextMemcachedClientTest : MemcachedClientTest
 	{
 		protected override MemcachedClient GetClient()
-		{
-			MemcachedClient client = new MemcachedClient("test/textConfig");
-			client.FlushAll();
+        {
+            var config = new MemcachedClientConfiguration();
+            config.AddServer("127.0.0.1", 11211);
+            MemcachedClient client = new MemcachedClient(config);
+            client.FlushAll();
 
 			return client;
 		}
 
-		[TestCase]
+		[Fact]
 		public void IncrementTest()
 		{
 			using (MemcachedClient client = GetClient())
 			{
-				Assert.IsTrue(client.Store(StoreMode.Set, "VALUE", "100"), "Initialization failed");
+				Assert.True(client.Store(StoreMode.Set, "VALUE", "100"), "Initialization failed");
 
-				Assert.AreEqual(102L, client.Increment("VALUE", 0, 2));
-				Assert.AreEqual(112L, client.Increment("VALUE", 0, 10));
+				Assert.Equal(102UL, client.Increment("VALUE", 0, 2));
+				Assert.Equal(112UL, client.Increment("VALUE", 0, 10));
 			}
 		}
 
-		[TestCase]
+		[Fact]
 		public void DecrementTest()
 		{
 			using (MemcachedClient client = GetClient())
 			{
 				client.Store(StoreMode.Set, "VALUE", "100");
 
-				Assert.AreEqual(98L, client.Decrement("VALUE", 0, 2));
-				Assert.AreEqual(88L, client.Decrement("VALUE", 0, 10));
+				Assert.Equal(98UL, client.Decrement("VALUE", 0, 2));
+				Assert.Equal(88UL, client.Decrement("VALUE", 0, 10));
 			}
 		}
 
-		[TestCase]
+		[Fact]
 		public void CASTest()
 		{
 			using (MemcachedClient client = GetClient())
@@ -47,24 +49,24 @@ namespace MemcachedTest
 				// store the item
 				var r1 = client.Store(StoreMode.Set, "CasItem1", "foo");
 
-				Assert.IsTrue(r1, "Initial set failed.");
+				Assert.True(r1, "Initial set failed.");
 
 				// get back the item and check the cas value (it should match the cas from the set)
 				var r2 = client.GetWithCas<string>("CasItem1");
 
-				Assert.AreEqual(r2.Result, "foo", "Invalid data returned; expected 'foo'.");
-				Assert.AreNotEqual(0, r2.Cas, "No cas value was returned.");
+				Assert.Equal(r2.Result, "foo");
+				Assert.NotEqual(0UL, r2.Cas);
 
 				var r3 = client.Cas(StoreMode.Set, "CasItem1", "bar", r2.Cas - 1);
 
-				Assert.IsFalse(r3.Result, "foo", "Overwriting with 'bar' should have failed.");
+				Assert.False(r3.Result, "foo");
 
 				var r4 = client.Cas(StoreMode.Set, "CasItem1", "baz", r2.Cas);
 
-				Assert.IsTrue(r4.Result, "foo", "Overwriting with 'baz' should have succeeded.");
+				Assert.True(r4.Result, "Overwriting with 'baz' should have succeeded.");
 
 				var r5 = client.GetWithCas<string>("CasItem1");
-				Assert.AreEqual(r5.Result, "baz", "Invalid data returned; excpected 'baz'.");
+				Assert.Equal(r5.Result, "baz");
 			}
 		}
 	}

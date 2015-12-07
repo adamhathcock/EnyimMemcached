@@ -1,0 +1,27 @@
+{
+    "version": "3.2.3",
+    "summary": "EnyimMemcached",
+    "commands": {
+        "test": "xunit.runner.dnx"
+    },
+    "frameworks": {
+        "dnxcore50": { }
+    },
+    "configurations": {
+        "Debug": {
+            "compilationOptions": {
+                "allowUnsafe": true
+            }
+        },
+        "Release": {
+            "compilationOptions": {
+                "allowUnsafe": true
+            }
+        }
+    },
+    "dependencies": {
+        "Enyim.Caching": "3.2.3",
+        "xunit.runner.dnx": "2.1.0-rc1-*",
+        "xunit":"2.1.0" 
+    }
+}
