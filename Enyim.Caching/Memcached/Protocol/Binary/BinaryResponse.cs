@@ -44,7 +44,7 @@ namespace Enyim.Caching.Memcached.Protocol.Binary
             return this.Data.Array == null
                     ? null
                     : (this.responseMessage
-                        ?? (this.responseMessage = Encoding.ASCII.GetString(this.Data.Array, this.Data.Offset, this.Data.Count)));
+                        ?? (this.responseMessage = Encoding.UTF8.GetString(this.Data.Array, this.Data.Offset, this.Data.Count)));
         }
 
         public unsafe bool Read(PooledSocket socket)

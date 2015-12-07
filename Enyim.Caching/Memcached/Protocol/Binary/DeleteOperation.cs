@@ -30,9 +30,9 @@ namespace Enyim.Caching.Memcached.Protocol.Binary
 				if (response.StatusCode == 0)
 					log.DebugFormat("Delete succeeded for key '{0}'.", this.Key);
 				else
-					log.DebugFormat("Delete failed for key '{0}'. Reason: {1}", this.Key, Encoding.ASCII.GetString(response.Data.Array, response.Data.Offset, response.Data.Count));
+					log.DebugFormat("Delete failed for key '{0}'. Reason: {1}", this.Key, Encoding.UTF8.GetString(response.Data.Array, response.Data.Offset, response.Data.Count));
 #endif
-			if (response.StatusCode == 0)
+            if (response.StatusCode == 0)
 			{
 				return result.Pass();
 			}

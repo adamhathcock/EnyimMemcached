@@ -50,7 +50,7 @@ namespace Enyim.Caching.Memcached.Protocol.Binary
 
 #if EVEN_MORE_LOGGING
             if(_logger.IsEnabled(LogLevel.Debug))
-			    _logger.LogDebug("Get failed for key '{0}'. Reason: {1}", this.Key, Encoding.ASCII.GetString(response.Data.Array, response.Data.Offset, response.Data.Count));
+			    _logger.LogDebug("Get failed for key '{0}'. Reason: {1}", this.Key, Encoding.UTF8.GetString(response.Data.Array, response.Data.Offset, response.Data.Count));
 #endif
 
             var message = ResultHelper.ProcessResponseData(response.Data);

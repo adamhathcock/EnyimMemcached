@@ -88,7 +88,7 @@ namespace Enyim.Caching.Memcached.Protocol.Text
 				ms.WriteByte((byte)data);
 			}
 
-			string retval = Encoding.ASCII.GetString(ms.ToArray(), 0, (int)ms.Length);
+			string retval = Encoding.UTF8.GetString(ms.ToArray(), 0, (int)ms.Length);
 
 			if (log.IsDebugEnabled)
 				log.Debug("ReadLine: " + retval);
@@ -106,14 +106,14 @@ namespace Enyim.Caching.Memcached.Protocol.Text
 		/// and use the <see cref="M:Enyim.Caching.Memcached.PooledSocket.Write(IList&lt;ArraySegment&lt;byte&gt;&gt;)"/> to send the command and the additional buffers in one transaction.</remarks>
 		public unsafe static IList<ArraySegment<byte>> GetCommandBuffer(string value)
 		{
-			var data = new ArraySegment<byte>(Encoding.ASCII.GetBytes(value));
+			var data = new ArraySegment<byte>(Encoding.UTF8.GetBytes(value));
 
 			return new ArraySegment<byte>[] { data };
 		}
 
 		public unsafe static IList<ArraySegment<byte>> GetCommandBuffer(string value, IList<ArraySegment<byte>> list)
 		{
-			var data = new ArraySegment<byte>(Encoding.ASCII.GetBytes(value));
+			var data = new ArraySegment<byte>(Encoding.UTF8.GetBytes(value));
 
 			list.Add(data);
 
