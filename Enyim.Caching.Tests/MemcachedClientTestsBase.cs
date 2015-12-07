@@ -86,7 +86,7 @@ namespace Enyim.Caching.Tests
 		protected void GetAssertFail(IGetOperationResult result)
         {
             Assert.False(result.Success, "Success was true");
-            Assert.True(result.Cas > 0, "Cas value was 0");
+            Assert.True(result.Cas == 0, "Cas value was not 0");
             Assert.True(result.StatusCode > 0, "StatusCode not greater than 0");
             Assert.False(result.HasValue, "HasValue was true");
 			Assert.Null(result.Value);
@@ -111,14 +111,14 @@ namespace Enyim.Caching.Tests
         {
             Assert.True(result.Success, "Success was false");
             Assert.True(result.Cas > 0, "Cas value was 0");
-            Assert.True(result.Cas == 0, "Cas value was not 0");
+            Assert.True(result.StatusCode == 0, "Cas value was not 0");
         }
 
 		protected void ConcatAssertFail(IConcatOperationResult result)
         {
             Assert.False(result.Success, "Success was true");
-            Assert.True(result.Cas > 0, "Cas value was 0");
-            Assert.True(result.StatusCode > 0, "StatusCode not greater than 0");
+            Assert.True(result.Cas == 0, "Cas value was not 0");
+            Assert.True((result.StatusCode ?? 1 ) > 0, "StatusCode not greater than 0");
         }		
 	}
 }

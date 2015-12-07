@@ -68,7 +68,7 @@ namespace Enyim.Caching.Memcached.Results.Extensions
 			target.Success = source.Success;
 			target.Exception = source.Exception;
 			target.StatusCode = source.StatusCode ?? target.StatusCode;
-			target.InnerResult = source.InnerResult ?? source;
+			target.InnerResult = source.InnerResult;
 		}
 	}
 }

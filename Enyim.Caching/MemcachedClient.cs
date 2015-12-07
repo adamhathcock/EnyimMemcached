@@ -886,62 +886,42 @@ namespace Enyim.Caching
             var byServer = GroupByServer(hashed.Keys);
 
             var retval = new Dictionary<string, T>(hashed.Count);
-            var handles = new List<WaitHandle>();
 
             //execute each list of keys on their respective node
-            foreach (var slice in byServer)
+
+            Parallel.ForEach(byServer, slice =>
             {
-                var node = slice.Key;
+                                        try
+                                        {
+                                            var node = slice.Key;
 
-                var nodeKeys = slice.Value;
-                var mget = this.pool.OperationFactory.MultiGet(nodeKeys);
+                                           var nodeKeys = slice.Value;
+                                           var mget = this.pool.OperationFactory.MultiGet(nodeKeys);
+                                           
+                                           var opResult = node.Execute(mget);
+                                           if (opResult.Success)
+                                           {
+                                               // deserialize the items in the dictionary
+                                               foreach (var kvp in mget.Result)
+                                               {
+                                                   string original;
+                                                   if (hashed.TryGetValue(kvp.Key, out original))
+                                                   {
+                                                       var result = collector(mget, kvp);
 
-                // we'll use the delegate's BeginInvoke/EndInvoke to run the gets parallel
-                var action = new Func<IOperation, IOperationResult>(node.Execute);
-                var mre = new ManualResetEvent(false);
-                handles.Add(mre);
-
-                //execute the mgets in parallel
-                action.BeginInvoke(mget, iar =>
-                {
-                    try
-                    {
-                        using (iar.AsyncWaitHandle)
-                            if (action.EndInvoke(iar).Success)
-                            {
-                                // deserialize the items in the dictionary
-                                foreach (var kvp in mget.Result)
-                                {
-                                    string original;
-                                    if (hashed.TryGetValue(kvp.Key, out original))
-                                    {
-                                        var result = collector(mget, kvp);
-
-                                        // the lock will serialize the merge,
-                                        // but at least the commands were not waiting on each other
-                                        lock (retval) retval[original] = result;
-                                    }
-                                }
-                            }
-                    }
-                    catch (Exception e)
-                    {
-                        _loggger.LogError("PerformMultiGet", e);
-                    }
-                    finally
-                    {
-                        // indicate that we finished processing
-                        mre.Set();
-                    }
-                }, nodeKeys);
-            }
-
-            // wait for all nodes to finish
-            if (handles.Count > 0)
-            {
-                SafeWaitAllAndDispose(handles.ToArray());
-            }
-
+                                                       // the lock will serialize the merge,
+                                                       // but at least the commands were not waiting on each other
+                                                       lock (retval)
+                                                           retval[original] = result;
+                                                   }
+                                               }
+                                           }
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            _loggger.LogError("PerformMultiGet", e);
+                                        }
+            });
             return retval;
         }
 
