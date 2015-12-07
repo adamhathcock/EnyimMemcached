@@ -5,6 +5,8 @@ using System.Text;
 using NUnit.Framework;
 using Enyim.Caching.Memcached;
 using System.Net;
+using System.Threading.Tasks;
+using Enyim.Caching.Memcached.Results;
 
 namespace MemcachedTest
 {
@@ -3332,7 +3334,12 @@ namespace MemcachedTest
 			throw new NotImplementedException();
 		}
 
-		#endregion
+	    public Task<IOperationResult> ExecuteAsync(IOperation op)
+	    {
+	        throw new NotImplementedException();
+	    }
+
+	    #endregion
 
 		#region IDisposable Members
 

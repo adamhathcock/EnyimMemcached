@@ -287,7 +287,7 @@ namespace Enyim.Caching
             ulong tmp = 0;
             int status;
 
-            return this.PerformStore(mode, key, value, MemcachedClient.GetExpiration(validFor, null), ref tmp, out status).Success;
+            return this.PerformStore(mode, key, value, MemcachedClient.GetExpiration(validFor), ref tmp, out status).Success;
         }
 
         /// <summary>
@@ -303,7 +303,7 @@ namespace Enyim.Caching
             ulong tmp = 0;
             int status;
 
-            return this.PerformStore(mode, key, value, MemcachedClient.GetExpiration(null, expiresAt), ref tmp, out status).Success;
+            return this.PerformStore(mode, key, value, MemcachedClient.GetExpiration(expiresAt), ref tmp, out status).Success;
         }
 
         /// <summary>
@@ -332,7 +332,7 @@ namespace Enyim.Caching
         /// <returns>A CasResult object containing the version of the item and the result of the operation (true if the item was successfully stored in the cache; false otherwise).</returns>
         public CasResult<bool> Cas(StoreMode mode, string key, object value, TimeSpan validFor, ulong cas)
         {
-            var result = this.PerformStore(mode, key, value, MemcachedClient.GetExpiration(validFor, null), cas);
+            var result = this.PerformStore(mode, key, value, MemcachedClient.GetExpiration(validFor), cas);
             return new CasResult<bool> { Cas = result.Cas, Result = result.Success, StatusCode = result.StatusCode.Value };
         }
 
@@ -347,7 +347,7 @@ namespace Enyim.Caching
         /// <returns>A CasResult object containing the version of the item and the result of the operation (true if the item was successfully stored in the cache; false otherwise).</returns>
         public CasResult<bool> Cas(StoreMode mode, string key, object value, DateTime expiresAt, ulong cas)
         {
-            var result = this.PerformStore(mode, key, value, MemcachedClient.GetExpiration(null, expiresAt), cas);
+            var result = this.PerformStore(mode, key, value, MemcachedClient.GetExpiration(expiresAt), cas);
             return new CasResult<bool> { Cas = result.Cas, Result = result.Success, StatusCode = result.StatusCode.Value };
         }
 
@@ -461,7 +461,7 @@ namespace Enyim.Caching
         /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
         public ulong Increment(string key, ulong defaultValue, ulong delta, TimeSpan validFor)
         {
-            return this.PerformMutate(MutationMode.Increment, key, defaultValue, delta, MemcachedClient.GetExpiration(validFor, null)).Value;
+            return this.PerformMutate(MutationMode.Increment, key, defaultValue, delta, MemcachedClient.GetExpiration(validFor)).Value;
         }
 
         /// <summary>
@@ -475,7 +475,7 @@ namespace Enyim.Caching
         /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
         public ulong Increment(string key, ulong defaultValue, ulong delta, DateTime expiresAt)
         {
-            return this.PerformMutate(MutationMode.Increment, key, defaultValue, delta, MemcachedClient.GetExpiration(null, expiresAt)).Value;
+            return this.PerformMutate(MutationMode.Increment, key, defaultValue, delta, MemcachedClient.GetExpiration(expiresAt)).Value;
         }
 
         /// <summary>
@@ -505,7 +505,7 @@ namespace Enyim.Caching
         /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
         public CasResult<ulong> Increment(string key, ulong defaultValue, ulong delta, TimeSpan validFor, ulong cas)
         {
-            var result = this.CasMutate(MutationMode.Increment, key, defaultValue, delta, MemcachedClient.GetExpiration(validFor, null), cas);
+            var result = this.CasMutate(MutationMode.Increment, key, defaultValue, delta, MemcachedClient.GetExpiration(validFor), cas);
             return new CasResult<ulong> { Cas = result.Cas, Result = result.Value, StatusCode = result.StatusCode.Value };
         }
 
@@ -521,7 +521,7 @@ namespace Enyim.Caching
         /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
         public CasResult<ulong> Increment(string key, ulong defaultValue, ulong delta, DateTime expiresAt, ulong cas)
         {
-            var result = this.CasMutate(MutationMode.Increment, key, defaultValue, delta, MemcachedClient.GetExpiration(null, expiresAt), cas);
+            var result = this.CasMutate(MutationMode.Increment, key, defaultValue, delta, MemcachedClient.GetExpiration(expiresAt), cas);
             return new CasResult<ulong> { Cas = result.Cas, Result = result.Value, StatusCode = result.StatusCode.Value };
         }
 
@@ -551,7 +551,7 @@ namespace Enyim.Caching
         /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
         public ulong Decrement(string key, ulong defaultValue, ulong delta, TimeSpan validFor)
         {
-            return this.PerformMutate(MutationMode.Decrement, key, defaultValue, delta, MemcachedClient.GetExpiration(validFor, null)).Value;
+            return this.PerformMutate(MutationMode.Decrement, key, defaultValue, delta, MemcachedClient.GetExpiration(validFor)).Value;
         }
 
         /// <summary>
@@ -565,7 +565,7 @@ namespace Enyim.Caching
         /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
         public ulong Decrement(string key, ulong defaultValue, ulong delta, DateTime expiresAt)
         {
-            return this.PerformMutate(MutationMode.Decrement, key, defaultValue, delta, MemcachedClient.GetExpiration(null, expiresAt)).Value;
+            return this.PerformMutate(MutationMode.Decrement, key, defaultValue, delta, MemcachedClient.GetExpiration(expiresAt)).Value;
         }
 
         /// <summary>
@@ -595,7 +595,7 @@ namespace Enyim.Caching
         /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
         public CasResult<ulong> Decrement(string key, ulong defaultValue, ulong delta, TimeSpan validFor, ulong cas)
         {
-            var result = this.CasMutate(MutationMode.Decrement, key, defaultValue, delta, MemcachedClient.GetExpiration(validFor, null), cas);
+            var result = this.CasMutate(MutationMode.Decrement, key, defaultValue, delta, MemcachedClient.GetExpiration(validFor), cas);
             return new CasResult<ulong> { Cas = result.Cas, Result = result.Value, StatusCode = result.StatusCode.Value };
         }
 
@@ -611,7 +611,7 @@ namespace Enyim.Caching
         /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
         public CasResult<ulong> Decrement(string key, ulong defaultValue, ulong delta, DateTime expiresAt, ulong cas)
         {
-            var result = this.CasMutate(MutationMode.Decrement, key, defaultValue, delta, MemcachedClient.GetExpiration(null, expiresAt), cas);
+            var result = this.CasMutate(MutationMode.Decrement, key, defaultValue, delta, MemcachedClient.GetExpiration(expiresAt), cas);
             return new CasResult<ulong> { Cas = result.Cas, Result = result.Value, StatusCode = result.StatusCode.Value };
         }
 
@@ -981,30 +981,32 @@ namespace Enyim.Caching
         protected const int MaxSeconds = 60 * 60 * 24 * 30;
         protected static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1);
 
-        protected static uint GetExpiration(TimeSpan? validFor, DateTime? expiresAt)
+        protected static uint GetExpiration(TimeSpan validFor)
         {
-            if (validFor != null && expiresAt != null)
-                throw new ArgumentException("You cannot specify both validFor and expiresAt.");
             // convert timespans to absolute dates
-            if (validFor != null)
-            {
-                // infinity
-                if (validFor == TimeSpan.Zero || validFor == TimeSpan.MaxValue) return 0;
+            // infinity
+            if (validFor == TimeSpan.Zero || validFor == TimeSpan.MaxValue)
+                return 0;
 
-                expiresAt = DateTime.Now.Add(validFor.Value);
-            }
-            DateTime dt = expiresAt.Value;
-            if (dt < UnixEpoch) throw new ArgumentOutOfRangeException("expiresAt", "expiresAt must be >= 1970/1/1");
-		    
+            uint seconds = (uint)validFor.TotalSeconds;
+            if (seconds > MaxSeconds)
+                return GetExpiration(DateTime.Now.Add(validFor));
 
-            // accept MaxValue as infinite
-            if (dt == DateTime.MaxValue) return 0;
+            return seconds;
+        }
 
-            uint retval = (uint)(dt.ToUniversalTime() - UnixEpoch).TotalSeconds;
+        protected static uint GetExpiration(DateTime expiresAt)
+        {
+            if (expiresAt < UnixEpoch)
+                throw new ArgumentOutOfRangeException("expiresAt", "expiresAt must be >= 1970/1/1");
+
+            if (expiresAt == DateTime.MaxValue)
+                return 0;
+
+            uint retval = (uint)(expiresAt.ToUniversalTime() - UnixEpoch).TotalSeconds;
 
             return retval;
         }
-
         #endregion
         #region [ IDisposable                  ]
 
