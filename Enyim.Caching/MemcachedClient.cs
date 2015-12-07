@@ -41,8 +41,12 @@ namespace Enyim.Caching
         protected ITranscoder Transcoder { get { return this.transcoder; } }
 
         public MemcachedClient()
+            :this(new MemcachedClientConfiguration())
         {
-            IMemcachedClientConfiguration configuration = new MemcachedClientConfiguration(); 
+        }
+
+        public MemcachedClient(IMemcachedClientConfiguration configuration)
+        {
             configuration.SocketPool.MinPoolSize = 20;
             configuration.SocketPool.MaxPoolSize = 1000;
             configuration.SocketPool.ConnectionTimeout = new TimeSpan(0, 0, 3);
