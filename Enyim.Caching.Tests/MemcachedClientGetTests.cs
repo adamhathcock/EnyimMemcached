@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
 using Enyim.Caching.Memcached.Results.StatusCodes;
+using Xunit;
 
 namespace Enyim.Caching.Tests
 {
-	[TestFixture]
 	public class MemcachedClientGetTests : MemcachedClientTestsBase
 	{
 
-		[Test]
+		[Fact]
 		public void When_Getting_Existing_Item_Value_Is_Not_Null_And_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("get");
@@ -23,17 +22,17 @@ namespace Enyim.Caching.Tests
 			GetAssertPass(getResult, value);
 		}
 
-		[Test]
+		[Fact]
 		public void When_Getting_Item_For_Invalid_Key_HasValue_Is_False_And_Result_Is_Not_Successful()
 		{
 			var key = GetUniqueKey("get");
 
 			var getResult = _Client.ExecuteGet(key);
-			Assert.That(getResult.StatusCode, Is.EqualTo((int)StatusCodeEnums.NotFound), "Invalid status code");
+			Assert.Equal(getResult.StatusCode, (int)StatusCodeEnums.NotFound);
 			GetAssertFail(getResult);
 		}
 
-		[Test]
+		[Fact]
 		public void When_TryGetting_Existing_Item_Value_Is_Not_Null_And_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("get");
@@ -46,7 +45,7 @@ namespace Enyim.Caching.Tests
 			GetAssertPass(getResult, temp);
 		}
 
-		[Test]
+		[Fact]
 		public void When_Generic_Getting_Existing_Item_Value_Is_Not_Null_And_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("get");
@@ -55,13 +54,13 @@ namespace Enyim.Caching.Tests
 			StoreAssertPass(storeResult);
 
 			var getResult = _Client.ExecuteGet<string>(key);
-			Assert.That(getResult.Success, Is.True, "Success was false");
-			Assert.That(getResult.Cas, Is.GreaterThan(0), "Cas value was 0");
-			Assert.That(getResult.StatusCode, Is.EqualTo(0).Or.Null, "StatusCode was neither 0 nor null");
-			Assert.That(getResult.Value, Is.EqualTo(value), "Actual value was not expected value: " + getResult.Value);
+			Assert.True(getResult.Success, "Success was false");
+			Assert.True(getResult.Cas > 0, "Cas value was 0");
+			Assert.True((getResult.StatusCode ?? 0) == 0, "StatusCode was neither 0 nor null");
+			Assert.Equal(getResult.Value, value);
 		}
 
-		[Test]
+		[Fact]
 		public void When_Getting_Multiple_Keys_Result_Is_Successful()
 		{
 			var keys = GetUniqueKeys().Distinct();
@@ -71,15 +70,15 @@ namespace Enyim.Caching.Tests
 			}
 
 			var dict = _Client.ExecuteGet(keys);
-			Assert.That(dict.Keys.Count, Is.EqualTo(keys.Count()), "Keys count did not match results count");
+			Assert.Equal(dict.Keys.Count, keys.Count());
 
-			foreach (var key in dict.Keys)
+            foreach (var key in dict.Keys)
 			{
-				Assert.That(dict[key].Success, Is.True, "Get failed for key: " + key);
+				Assert.True(dict[key].Success, "Get failed for key: " + key);
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void When_Getting_Byte_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("Get");
@@ -89,7 +88,7 @@ namespace Enyim.Caching.Tests
 			GetAssertPass(getResult, expectedValue);
 		}
 
-		[Test]
+		[Fact]
 		public void When_Getting_SByte_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("Get");

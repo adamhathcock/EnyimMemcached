@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
 using Enyim.Caching.Memcached;
 using Enyim.Caching.Memcached.Results;
+using Xunit;
 
 namespace Enyim.Caching.Tests
 {
-
-	[TestFixture(Description = "MemcachedClient Store Tests")]
+    
 	public class MemcachedClientCasTests : MemcachedClientTestsBase
 	{
 
-		[Test]
+		[Fact]
 		public void When_Storing_Item_With_Valid_Cas_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("cas");
@@ -25,7 +24,7 @@ namespace Enyim.Caching.Tests
 			StoreAssertPass(casResult);
 		}
 
-		[Test]
+		[Fact]
 		public void When_Storing_Item_With_Invalid_Cas_Result_Is_Not_Successful()
 		{
 			var key = GetUniqueKey("cas");

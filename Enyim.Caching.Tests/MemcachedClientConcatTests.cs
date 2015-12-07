@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
+using Xunit;
 
 namespace Enyim.Caching.Tests
 {
-	[TestFixture]
 	public class MemcachedClientConcatTests : MemcachedClientTestsBase
 	{
-		[Test]
+		[Fact]
 		public void When_Appending_To_Existing_Value_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("concat");
@@ -28,7 +27,7 @@ namespace Enyim.Caching.Tests
 
 		}
 
-		[Test]
+		[Fact]
 		public void When_Appending_To_Invalid_Key_Result_Is_Not_Successful()
 		{
 			var key = GetUniqueKey("concat");
@@ -43,7 +42,7 @@ namespace Enyim.Caching.Tests
 
 		}
 
-		[Test]
+		[Fact]
 		public void When_Prepending_To_Existing_Value_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("concat");
@@ -62,7 +61,7 @@ namespace Enyim.Caching.Tests
 
 		}
 
-		[Test]
+		[Fact]
 		public void When_Prepending_To_Invalid_Key_Result_Is_Not_Successful()
 		{
 			var key = GetUniqueKey("concat");
@@ -77,7 +76,7 @@ namespace Enyim.Caching.Tests
 
 		}
 
-		[Test]
+		[Fact]
 		public void When_Appending_To_Existing_Value_Result_Is_Successful_With_Valid_Cas()
 		{
 			var key = GetUniqueKey("concat");
@@ -96,7 +95,7 @@ namespace Enyim.Caching.Tests
 
 		}
 
-		[Test]
+		[Fact]
 		public void When_Appending_To_Existing_Value_Result_Is_Not_Successful_With_Invalid_Cas()
 		{
 			var key = GetUniqueKey("concat");
@@ -111,7 +110,7 @@ namespace Enyim.Caching.Tests
 			ConcatAssertFail(concatResult);
 		}
 
-		[Test]
+		[Fact]
 		public void When_Prepending_To_Existing_Value_Result_Is_Successful_With_Valid_Cas()
 		{
 			var key = GetUniqueKey("concat");
@@ -130,7 +129,7 @@ namespace Enyim.Caching.Tests
 
 		}
 
-		[Test]
+		[Fact]
 		public void When_Prepending_To_Existing_Value_Result_Is_Not_Successful_With_Invalid_Cas()
 		{
 			var key = GetUniqueKey("concat");

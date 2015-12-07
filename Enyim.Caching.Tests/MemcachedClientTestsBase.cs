@@ -2,22 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
 using Enyim.Caching.Configuration;
 using Enyim.Caching.Memcached.Results;
 using Enyim.Caching.Memcached;
+using Xunit;
 
 namespace Enyim.Caching.Tests
 {
-
-	[TestFixture]
 	public abstract class MemcachedClientTestsBase
 	{
 
 		protected MemcachedClient _Client;
-
-		[SetUp]
-		public void SetUp()
+        
+		public MemcachedClientTestsBase()
 		{
 			var config = new MemcachedClientConfiguration();
 			config.AddServer("127.0.0.1", 11211);
@@ -65,64 +62,64 @@ namespace Enyim.Caching.Tests
 
 		protected void StoreAssertPass(IStoreOperationResult result)
 		{
-			Assert.That(result.Success, Is.True, "Success was false");
-			Assert.That(result.Cas, Is.GreaterThan(0), "Cas value was 0");
-			Assert.That(result.StatusCode, Is.EqualTo(0), "StatusCode was not 0");
+			Assert.True(result.Success, "Success was false");
+			Assert.True(result.Cas > 0, "Cas value was 0");
+			Assert.True(result.StatusCode == 0, "StatusCode was not 0");
 		}
 
 		protected void StoreAssertFail(IStoreOperationResult result)
 		{
-			Assert.That(result.Success, Is.False, "Success was true");
-			Assert.That(result.Cas, Is.EqualTo(0), "Cas value was not 0");
-			Assert.That(result.StatusCode, Is.GreaterThan(0), "StatusCode not greater than 0");
-			Assert.That(result.InnerResult, Is.Not.Null, "InnerResult was null");
+			Assert.False(result.Success, "Success was true");
+			Assert.True(result.Cas == 0, "Cas value was not 0");
+			Assert.True(result.StatusCode > 0, "StatusCode not greater than 0");
+			Assert.Null(result.InnerResult);
 		}
 
 		protected void GetAssertPass(IGetOperationResult result, object expectedValue)
 		{
-			Assert.That(result.Success, Is.True, "Success was false");
-			Assert.That(result.Cas, Is.GreaterThan(0), "Cas value was 0");
-			Assert.That(result.StatusCode, Is.EqualTo(0).Or.Null, "StatusCode was neither 0 nor null");
-			Assert.That(result.Value, Is.EqualTo(expectedValue), "Actual value was not expected value: " + result.Value);
+			Assert.True(result.Success, "Success was false");
+			Assert.True(result.Cas > 0, "Cas value was 0");
+			Assert.True((result.StatusCode ?? 0) == 0, "StatusCode was neither 0 nor null");
+			Assert.Equal(result.Value, expectedValue);
 		}
 
 		protected void GetAssertFail(IGetOperationResult result)
-		{
-			Assert.That(result.Success, Is.False, "Success was true");
-			Assert.That(result.Cas, Is.EqualTo(0), "Cas value was not 0");
-			Assert.That(result.StatusCode, Is.Null.Or.GreaterThan(0), "StatusCode not greater than 0");
-			Assert.That(result.HasValue, Is.False, "HasValue was true");
-			Assert.That(result.Value, Is.Null, "Value was not null");
+        {
+            Assert.False(result.Success, "Success was true");
+            Assert.True(result.Cas > 0, "Cas value was 0");
+            Assert.True(result.StatusCode > 0, "StatusCode not greater than 0");
+            Assert.False(result.HasValue, "HasValue was true");
+			Assert.Null(result.Value);
 		}
 
 		protected void MutateAssertPass(IMutateOperationResult result, ulong expectedValue)
-		{
-			Assert.That(result.Success, Is.True, "Success was false");
-			Assert.That(result.Value, Is.EqualTo(expectedValue), "Value was not expected value: " + expectedValue);
-			Assert.That(result.Cas, Is.GreaterThan(0), "Cas was not greater than 0");
-			Assert.That(result.StatusCode, Is.Null.Or.EqualTo(0), "StatusCode was not null or 0");
-		}
+        {
+            Assert.True(result.Success, "Success was false");
+            Assert.Equal(result.Value, expectedValue);
+            Assert.True(result.Cas > 0, "Cas value was 0");
+            Assert.True((result.StatusCode ?? 0) == 0, "StatusCode was neither 0 nor null");
+        }
 
 		protected void MutateAssertFail(IMutateOperationResult result)
-		{
-			Assert.That(result.Success, Is.False, "Success was true");
-			Assert.That(result.Cas, Is.EqualTo(0), "Cas 0");
-			Assert.That(result.StatusCode, Is.Null.Or.Not.EqualTo(0), "StatusCode was 0");
-		}
+        {
+            Assert.False(result.Success, "Success was true");
+            Assert.True(result.Cas > 0, "Cas value was 0");
+            Assert.True((result.StatusCode ?? 1) != 0, "StatusCode was neither 0 nor null");
+        }
 
 		protected void ConcatAssertPass(IConcatOperationResult result)
-		{
-			Assert.That(result.Success, Is.True, "Success was false");
-			Assert.That(result.Cas, Is.GreaterThan(0), "Cas value was 0");
-			Assert.That(result.StatusCode, Is.EqualTo(0), "StatusCode was not 0");
-		}
+        {
+            Assert.True(result.Success, "Success was false");
+            Assert.True(result.Cas > 0, "Cas value was 0");
+            Assert.True(result.Cas == 0, "Cas value was not 0");
+        }
 
 		protected void ConcatAssertFail(IConcatOperationResult result)
-		{
-			Assert.That(result.Success, Is.False, "Success was true");
-			Assert.That(result.Cas, Is.EqualTo(0), "Cas value was not 0");
-			Assert.That(result.StatusCode, Is.Null.Or.GreaterThan(0), "StatusCode not greater than 0");
-		}		
+        {
+            Assert.False(result.Success, "Success was true");
+            Assert.True(result.Cas > 0, "Cas value was 0");
+            Assert.True(result.StatusCode > 0, "StatusCode not greater than 0");
+        }		
 	}
 }
 
