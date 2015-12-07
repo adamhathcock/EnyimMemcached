@@ -985,7 +985,6 @@ namespace Enyim.Caching
         {
             if (validFor != null && expiresAt != null)
                 throw new ArgumentException("You cannot specify both validFor and expiresAt.");
-
             // convert timespans to absolute dates
             if (validFor != null)
             {
@@ -994,10 +993,9 @@ namespace Enyim.Caching
 
                 expiresAt = DateTime.Now.Add(validFor.Value);
             }
-
             DateTime dt = expiresAt.Value;
-
             if (dt < UnixEpoch) throw new ArgumentOutOfRangeException("expiresAt", "expiresAt must be >= 1970/1/1");
+		    
 
             // accept MaxValue as infinite
             if (dt == DateTime.MaxValue) return 0;
