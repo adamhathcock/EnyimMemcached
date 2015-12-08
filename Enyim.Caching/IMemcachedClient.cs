@@ -9,16 +9,6 @@ namespace Enyim.Caching
 	public interface IMemcachedClient : IDisposable
 	{
         Task<IGetOperationResult<T>> GetAsync<T>(string key);
-        object Get(string key);
-		T Get<T>(string key);
-		IDictionary<string, object> Get(IEnumerable<string> keys);
-
-		bool TryGet(string key, out object value);
-		bool TryGetWithCas(string key, out CasResult<object> value);
-
-		CasResult<object> GetWithCas(string key);
-		CasResult<T> GetWithCas<T>(string key);
-		IDictionary<string, CasResult<object>> GetWithCas(IEnumerable<string> keys);
 
 		bool Append(string key, ArraySegment<byte> data);
 		CasResult<bool> Append(string key, ulong cas, ArraySegment<byte> data);

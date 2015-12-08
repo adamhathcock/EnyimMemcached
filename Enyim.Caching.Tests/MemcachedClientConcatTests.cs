@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Enyim.Caching.Tests
@@ -9,7 +10,7 @@ namespace Enyim.Caching.Tests
 	public class MemcachedClientConcatTests : MemcachedClientTestsBase
 	{
 		[Fact]
-		public void When_Appending_To_Existing_Value_Result_Is_Successful()
+		public async Task When_Appending_To_Existing_Value_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("concat");
 			var value = GetRandomString();
@@ -22,13 +23,13 @@ namespace Enyim.Caching.Tests
 			var concatResult = _Client.ExecuteAppend(key, data);
 			ConcatAssertPass(concatResult);
 
-			var getResult = _Client.ExecuteGet(key);
-			GetAssertPass(getResult, value + toAppend);
+            var getResult = await _Client.GetAsync<string>(key);
+            GetAssertPass(getResult, value + toAppend);
 
 		}
 
 		[Fact]
-		public void When_Appending_To_Invalid_Key_Result_Is_Not_Successful()
+		public async Task When_Appending_To_Invalid_Key_Result_Is_Not_Successful()
 		{
 			var key = GetUniqueKey("concat");
 
@@ -37,13 +38,13 @@ namespace Enyim.Caching.Tests
 			var concatResult = _Client.ExecuteAppend(key, data);
 			ConcatAssertFail(concatResult);
 
-			var getResult = _Client.ExecuteGet(key);
+			var getResult = await _Client.GetAsync<string>(key);
 			GetAssertFail(getResult);
 
 		}
 
 		[Fact]
-		public void When_Prepending_To_Existing_Value_Result_Is_Successful()
+		public async Task When_Prepending_To_Existing_Value_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("concat");
 			var value = GetRandomString();
@@ -56,13 +57,13 @@ namespace Enyim.Caching.Tests
 			var concatResult = _Client.ExecutePrepend(key, data);
 			ConcatAssertPass(concatResult);
 
-			var getResult = _Client.ExecuteGet(key);
-			GetAssertPass(getResult, toPrepend + value);
+            var getResult = await _Client.GetAsync<string>(key);
+            GetAssertPass(getResult, toPrepend + value);
 
 		}
 
 		[Fact]
-		public void When_Prepending_To_Invalid_Key_Result_Is_Not_Successful()
+		public async Task When_Prepending_To_Invalid_Key_Result_Is_Not_Successful()
 		{
 			var key = GetUniqueKey("concat");
 
@@ -71,13 +72,13 @@ namespace Enyim.Caching.Tests
 			var concatResult = _Client.ExecutePrepend(key, data);
 			ConcatAssertFail(concatResult);
 
-			var getResult = _Client.ExecuteGet(key);
-			GetAssertFail(getResult);
+            var getResult = await _Client.GetAsync<string>(key);
+            GetAssertFail(getResult);
 
 		}
 
 		[Fact]
-		public void When_Appending_To_Existing_Value_Result_Is_Successful_With_Valid_Cas()
+		public async Task When_Appending_To_Existing_Value_Result_Is_Successful_With_Valid_Cas()
 		{
 			var key = GetUniqueKey("concat");
 			var value = GetRandomString();
@@ -90,8 +91,8 @@ namespace Enyim.Caching.Tests
 			var concatResult = _Client.ExecuteAppend(key, storeResult.Cas, data);
 			ConcatAssertPass(concatResult);
 
-			var getResult = _Client.ExecuteGet(key);
-			GetAssertPass(getResult, value + toAppend);
+            var getResult = await _Client.GetAsync<string>(key);
+            GetAssertPass(getResult, value + toAppend);
 
 		}
 
@@ -111,7 +112,7 @@ namespace Enyim.Caching.Tests
 		}
 
 		[Fact]
-		public void When_Prepending_To_Existing_Value_Result_Is_Successful_With_Valid_Cas()
+		public async Task When_Prepending_To_Existing_Value_Result_Is_Successful_With_Valid_Cas()
 		{
 			var key = GetUniqueKey("concat");
 			var value = GetRandomString();
@@ -124,8 +125,8 @@ namespace Enyim.Caching.Tests
 			var concatResult = _Client.ExecuteAppend(key, storeResult.Cas, data);
 			ConcatAssertPass(concatResult);
 
-			var getResult = _Client.ExecuteGet(key);
-			GetAssertPass(getResult, value + tpPrepend);
+            var getResult = await _Client.GetAsync<string>(key);
+            GetAssertPass(getResult, value + tpPrepend);
 
 		}
 

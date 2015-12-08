@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Enyim.Caching;
 using Enyim.Caching.Configuration;
 using Enyim.Caching.Memcached;
@@ -44,21 +45,21 @@ namespace MemcachedTest
         }
 
         [Fact]
-        public void IncrementNoDefaultTest()
+        public async Task IncrementNoDefaultTest()
         {
             using (MemcachedClient client = GetClient())
             {
-                Assert.Null(client.Get("VALUE"));
+                Assert.Null((await client.GetAsync<string>("VALUE")).Value);
 
                 Assert.Equal(2, (int)client.Increment("VALUE", 2, 2));
 
-                var value = client.Get("VALUE");
-                Assert.Equal("2", value);
+                var value = await client.GetAsync<string>("VALUE");
+                Assert.Equal("2", value.Value);
             }
         }
 
         [Fact]
-        public virtual void CASTest()
+        public async Task CASTest()
         {
             using (MemcachedClient client = GetClient())
             {
@@ -69,9 +70,9 @@ namespace MemcachedTest
                 Assert.NotEqual(r1.Cas, (ulong)0);
 
                 // get back the item and check the cas value (it should match the cas from the set)
-                var r2 = client.GetWithCas<string>("CasItem1");
+                var r2 = await client.GetAsync<string>("CasItem1");
 
-                Assert.Equal(r2.Result, "foo");
+                Assert.Equal(r2.Value, "foo");
                 Assert.Equal(r1.Cas, r2.Cas);
 
                 var r3 = client.Cas(StoreMode.Set, "CasItem1", "bar", r1.Cas - 1);
@@ -81,14 +82,14 @@ namespace MemcachedTest
                 var r4 = client.Cas(StoreMode.Set, "CasItem1", "baz", r2.Cas);
 
                 Assert.True(r4.Result, "Overwriting with 'baz' should have succeeded.");
-
-                var r5 = client.GetWithCas<string>("CasItem1");
-                Assert.Equal(r5.Result, "baz");
+                
+                var r5 = await client.GetAsync<string>("CasItem1");
+                Assert.Equal(r5.Value, "baz");
             }
         }
 
         [Fact]
-        public void AppendCASTest()
+        public async Task AppendCASTest()
         {
             using (MemcachedClient client = GetClient())
             {
@@ -103,9 +104,9 @@ namespace MemcachedTest
                 Assert.True(r2.Result, "Append should have succeeded.");
 
                 // get back the item and check the cas value (it should match the cas from the set)
-                var r3 = client.GetWithCas<string>("CasAppend");
+                var r3 = await client.GetAsync<string>("CasAppend");
 
-                Assert.Equal(r3.Result, "fool");
+                Assert.Equal(r3.Value, "fool");
                 Assert.Equal(r2.Cas, r3.Cas);
 
                 var r4 = client.Append("CasAppend", r1.Cas, new System.ArraySegment<byte>(new byte[] { (byte)'l' }));
@@ -114,7 +115,7 @@ namespace MemcachedTest
         }
 
         [Fact]
-        public void PrependCASTest()
+        public async Task PrependCASTest()
         {
             using (MemcachedClient client = GetClient())
             {
@@ -129,9 +130,9 @@ namespace MemcachedTest
                 Assert.True(r2.Result, "Prepend should have succeeded.");
 
                 // get back the item and check the cas value (it should match the cas from the set)
-                var r3 = client.GetWithCas<string>("CasPrepend");
+                var r3 = await client.GetAsync<string>("CasPrepend");
 
-                Assert.Equal(r3.Result, "fool");
+                Assert.Equal(r3.Value, "fool");
                 Assert.Equal(r2.Cas, r3.Cas);
 
                 var r4 = client.Prepend("CasPrepend", r1.Cas, new System.ArraySegment<byte>(new byte[] { (byte)'l' }));

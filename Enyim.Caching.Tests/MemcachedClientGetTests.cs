@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Enyim.Caching.Memcached.Results.StatusCodes;
 using Xunit;
 
@@ -11,91 +12,60 @@ namespace Enyim.Caching.Tests
 	{
 
 		[Fact]
-		public void When_Getting_Existing_Item_Value_Is_Not_Null_And_Result_Is_Successful()
+		public async Task When_Getting_Existing_Item_Value_Is_Not_Null_And_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("get");
 			var value = GetRandomString();
 			var storeResult = Store(key: key, value: value);
 			StoreAssertPass(storeResult);
 
-			var getResult = _Client.ExecuteGet(key);
-			GetAssertPass(getResult, value);
+            var getResult = await _Client.GetAsync<string>(key);
+            GetAssertPass(getResult, value);
 		}
 
 		[Fact]
-		public void When_Getting_Item_For_Invalid_Key_HasValue_Is_False_And_Result_Is_Not_Successful()
+		public async Task When_Getting_Item_For_Invalid_Key_HasValue_Is_False_And_Result_Is_Not_Successful()
 		{
 			var key = GetUniqueKey("get");
 
-			var getResult = _Client.ExecuteGet(key);
-			Assert.Equal(getResult.StatusCode, (int)StatusCodeEnums.NotFound);
+            var getResult = await _Client.GetAsync<string>(key);
+            Assert.Equal(getResult.StatusCode, (int)StatusCodeEnums.NotFound);
 			GetAssertFail(getResult);
 		}
 
 		[Fact]
-		public void When_TryGetting_Existing_Item_Value_Is_Not_Null_And_Result_Is_Successful()
+		public async Task When_Generic_Getting_Existing_Item_Value_Is_Not_Null_And_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("get");
 			var value = GetRandomString();
 			var storeResult = Store(key: key, value: value);
 			StoreAssertPass(storeResult);
 
-			object temp;
-			var getResult = _Client.ExecuteTryGet(key, out temp);
-			GetAssertPass(getResult, temp);
-		}
-
-		[Fact]
-		public void When_Generic_Getting_Existing_Item_Value_Is_Not_Null_And_Result_Is_Successful()
-		{
-			var key = GetUniqueKey("get");
-			var value = GetRandomString();
-			var storeResult = Store(key: key, value: value);
-			StoreAssertPass(storeResult);
-
-			var getResult = _Client.ExecuteGet<string>(key);
-			Assert.True(getResult.Success, "Success was false");
+            var getResult = await _Client.GetAsync<string>(key);
+            Assert.True(getResult.Success, "Success was false");
 			Assert.True(getResult.Cas > 0, "Cas value was 0");
 			Assert.True((getResult.StatusCode ?? 0) == 0, "StatusCode was neither 0 nor null");
 			Assert.Equal(getResult.Value, value);
 		}
-
+        
 		[Fact]
-		public void When_Getting_Multiple_Keys_Result_Is_Successful()
-		{
-			var keys = GetUniqueKeys().Distinct();
-			foreach (var key in keys)
-			{
-				Store(key: key, value: "Value for" + key);
-			}
-
-			var dict = _Client.ExecuteGet(keys);
-			Assert.Equal(dict.Keys.Count, keys.Count());
-
-            foreach (var key in dict.Keys)
-			{
-				Assert.True(dict[key].Success, "Get failed for key: " + key);
-			}
-		}
-
-		[Fact]
-		public void When_Getting_Byte_Result_Is_Successful()
+		public async Task When_Getting_Byte_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("Get");
 			const byte expectedValue = 1;
 			Store(key: key, value: expectedValue);
-			var getResult = _Client.ExecuteGet(key);
-			GetAssertPass(getResult, expectedValue);
+            var getResult = await _Client.GetAsync<byte>(key);
+            GetAssertPass(getResult, expectedValue);
 		}
 
 		[Fact]
-		public void When_Getting_SByte_Result_Is_Successful()
+		public async Task When_Getting_SByte_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("Get");
 			const sbyte expectedValue = 1;
 			Store(key: key, value: expectedValue);
-			var getResult = _Client.ExecuteGet(key);
-			GetAssertPass(getResult, expectedValue);
+            var getResult = await _Client.GetAsync<sbyte>(key);
+            GetAssertPass(getResult, expectedValue);
 		}
 	}
 }

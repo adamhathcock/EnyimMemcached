@@ -6,6 +6,7 @@ using Enyim.Caching.Memcached;
 using Enyim.Caching.Configuration;
 using Enyim.Caching;
 using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace MemcachedTest
@@ -13,7 +14,7 @@ namespace MemcachedTest
 	public class FailurePolicyTest
 	{
 		[Fact]
-		public void TestIfCalled()
+		public async Task TestIfCalled()
 		{
 			var config = new MemcachedClientConfiguration();
 			config.AddServer("nonexisting.enyim.com:2244");
@@ -24,7 +25,7 @@ namespace MemcachedTest
 
 			var client = new MemcachedClient(config);
 
-			Assert.Null(client.Get("a"));
+			Assert.Null((await client.GetAsync<string>("a")).Value);
 		}
 
 		class FakePolicy : INodeFailurePolicy, INodeFailurePolicyFactory
@@ -43,7 +44,7 @@ namespace MemcachedTest
 		}
 
 		[Fact]
-		public void TestThrottlingFailurePolicy()
+		public async Task TestThrottlingFailurePolicy()
 		{
 			var config = new MemcachedClientConfiguration();
 			config.AddServer("nonexisting.enyim.com:2244");
@@ -65,16 +66,16 @@ namespace MemcachedTest
 				didFail = true;
 			};
 
-			Assert.Null(client.Get("a"));
-			Assert.Null(client.Get("a"));
+            Assert.Null((await client.GetAsync<string>("a")).Value);
+            Assert.Null((await client.GetAsync<string>("a")).Value);
 
-			canFail = true;
+            canFail = true;
 			Thread.Sleep(2000);
 
-            Assert.Null(client.Get("a"));
-            Assert.Null(client.Get("a"));
-            Assert.Null(client.Get("a"));
-            Assert.Null(client.Get("a"));
+            Assert.Null((await client.GetAsync<string>("a")).Value);
+            Assert.Null((await client.GetAsync<string>("a")).Value);
+            Assert.Null((await client.GetAsync<string>("a")).Value);
+            Assert.Null((await client.GetAsync<string>("a")).Value);
 
             Assert.True(didFail, "didfail");
 		}

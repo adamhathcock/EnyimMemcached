@@ -75,7 +75,7 @@ namespace Enyim.Caching.Tests
 			Assert.Null(result.InnerResult);
 		}
 
-		protected void GetAssertPass(IGetOperationResult result, object expectedValue)
+		protected void GetAssertPass<T>(IGetOperationResult<T> result, T expectedValue)
 		{
 			Assert.True(result.Success, "Success was false");
 			Assert.True(result.Cas > 0, "Cas value was 0");
@@ -83,7 +83,7 @@ namespace Enyim.Caching.Tests
 			Assert.Equal(result.Value, expectedValue);
 		}
 
-		protected void GetAssertFail(IGetOperationResult result)
+		protected void GetAssertFail<T>(IGetOperationResult<T> result)
         {
             Assert.False(result.Success, "Success was true");
             Assert.True(result.Cas == 0, "Cas value was not 0");

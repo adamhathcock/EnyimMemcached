@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Enyim.Caching.Memcached;
 using Enyim.Caching.Memcached.Results;
 
@@ -12,12 +9,6 @@ namespace Enyim.Caching
 	/// </summary>
 	public interface IMemcachedResultsClient
 	{
-		IGetOperationResult ExecuteGet(string key);
-		IGetOperationResult<T> ExecuteGet<T>(string key);
-		IDictionary<string, IGetOperationResult> ExecuteGet(IEnumerable<string> keys);
-
-		IGetOperationResult ExecuteTryGet(string key, out object value);
-		
 		IStoreOperationResult ExecuteStore(StoreMode mode, string key, object value);
 		IStoreOperationResult ExecuteStore(StoreMode mode, string key, object value, DateTime expiresAt);
 		IStoreOperationResult ExecuteStore(StoreMode mode, string key, object value, TimeSpan validFor);

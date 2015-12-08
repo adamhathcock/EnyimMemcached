@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Enyim.Caching;
 using Enyim.Caching.Configuration;
 using Enyim.Caching.Memcached;
@@ -42,7 +43,7 @@ namespace MemcachedTest
 		}
 
 		[Fact]
-		public void CASTest()
+		public async Task CASTest()
 		{
 			using (MemcachedClient client = GetClient())
 			{
@@ -52,9 +53,9 @@ namespace MemcachedTest
 				Assert.True(r1, "Initial set failed.");
 
 				// get back the item and check the cas value (it should match the cas from the set)
-				var r2 = client.GetWithCas<string>("CasItem1");
+				var r2 = await client.GetAsync<string>("CasItem1");
 
-				Assert.Equal(r2.Result, "foo");
+				Assert.Equal(r2.Value, "foo");
 				Assert.NotEqual(0UL, r2.Cas);
 
 				var r3 = client.Cas(StoreMode.Set, "CasItem1", "bar", r2.Cas - 1);
@@ -64,9 +65,9 @@ namespace MemcachedTest
 				var r4 = client.Cas(StoreMode.Set, "CasItem1", "baz", r2.Cas);
 
 				Assert.True(r4.Result, "Overwriting with 'baz' should have succeeded.");
-
-				var r5 = client.GetWithCas<string>("CasItem1");
-				Assert.Equal(r5.Result, "baz");
+                
+                var r5 = await client.GetAsync<string>("CasItem1");
+                Assert.Equal(r5.Value, "baz");
 			}
 		}
 	}

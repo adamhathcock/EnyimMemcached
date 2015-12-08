@@ -87,32 +87,7 @@ namespace Enyim.Caching
 
         public event Action<IMemcachedNode> NodeFailed;
 
-        /// <summary>
-        /// Retrieves the specified item from the cache.
-        /// </summary>
-        /// <param name="key">The identifier for the item to retrieve.</param>
-        /// <returns>The retrieved item, or <value>null</value> if the key was not found.</returns>
-        [Obsolete]
-        public object Get(string key)
-        {
-            object tmp;
-
-            return this.TryGet(key, out tmp) ? tmp : null;
-        }
-
-        /// <summary>
-        /// Retrieves the specified item from the cache.
-        /// </summary>
-        /// <param name="key">The identifier for the item to retrieve.</param>
-        /// <returns>The retrieved item, or <value>default(T)</value> if the key was not found.</returns>
-        [Obsolete]
-        public T Get<T>(string key)
-        {
-            object tmp;
-
-            return TryGet(key, out tmp) ? (T)tmp : default(T);
-        }
-
+      
         public async Task<IGetOperationResult<T>> GetAsync<T>(string key)
         {
             var result = new DefaultGetOperationResultFactory<T>().Create();
@@ -131,6 +106,8 @@ namespace Enyim.Caching
                     {
                         result.Success = true;
                         result.Value = this.transcoder.Deserialize<T>(command.Result);
+                        result.Cas = command.CasValue;
+                        result.StatusCode = command.StatusCode;
                         return result;
                     }
                     else {
@@ -139,10 +116,14 @@ namespace Enyim.Caching
                         {
                             result.Success = true;
                             result.Value = (T)tempResult;
+                            result.Cas = command.CasValue;
+                            result.StatusCode = command.StatusCode;
                             return result;
                         }
                     }
                 }
+                result.Cas = command.CasValue;
+                result.StatusCode = command.StatusCode;
             }
             else
             {
@@ -153,86 +134,7 @@ namespace Enyim.Caching
             result.Value = default(T);
             return result;
         }
-
-        /// <summary>
-        /// Tries to get an item from the cache.
-        /// </summary>
-        /// <param name="key">The identifier for the item to retrieve.</param>
-        /// <param name="value">The retrieved item or null if not found.</param>
-        /// <returns>The <value>true</value> if the item was successfully retrieved.</returns>
-        [Obsolete]
-        public bool TryGet(string key, out object value)
-        {
-            ulong cas = 0;
-
-            return this.PerformTryGet(key, out cas, out value).Success;
-        }
-
-        [Obsolete]
-        public CasResult<object> GetWithCas(string key)
-        {
-            return this.GetWithCas<object>(key);
-        }
-
-        [Obsolete]
-        public CasResult<T> GetWithCas<T>(string key)
-        {
-            CasResult<object> tmp;
-
-            return this.TryGetWithCas(key, out tmp)
-                    ? new CasResult<T> { Cas = tmp.Cas, Result = (T)tmp.Result }
-                    : new CasResult<T> { Cas = tmp.Cas, Result = default(T) };
-        }
-
-        [Obsolete]
-        public bool TryGetWithCas(string key, out CasResult<object> value)
-        {
-            object tmp;
-            ulong cas;
-
-            var retval = this.PerformTryGet(key, out cas, out tmp);
-
-            value = new CasResult<object> { Cas = cas, Result = tmp };
-
-            return retval.Success;
-        }
-
-        protected virtual IGetOperationResult PerformTryGet(string key, out ulong cas, out object value)
-        {
-            var hashedKey = this.keyTransformer.Transform(key);
-            var node = this.pool.Locate(hashedKey);
-            var result = GetOperationResultFactory.Create();
-
-            cas = 0;
-            value = null;
-
-            if (node != null)
-            {
-                var command = this.pool.OperationFactory.Get(hashedKey);
-                var commandResult = node.Execute(command);
-
-                if (commandResult.Success)
-                {
-                    result.Value = value = this.transcoder.Deserialize(command.Result);
-                    result.Cas = cas = command.CasValue;
-
-                    result.Pass();
-                    return result;
-                }
-                else
-                {
-                    commandResult.Combine(result);
-                    return result;
-                }
-            }
-
-            result.Value = value;
-            result.Cas = cas;
-
-            result.Fail("Unable to locate node");
-            return result;
-        }
-
+        
 
         #region [ Store                        ]
 
