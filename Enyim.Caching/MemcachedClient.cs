@@ -24,7 +24,7 @@ namespace Enyim.Caching
         /// </summary>
         public static readonly TimeSpan Infinite = TimeSpan.Zero;
         //internal static readonly MemcachedClientSection DefaultSettings = ConfigurationManager.GetSection("enyim.com/memcached") as MemcachedClientSection;
-        private ILogger _loggger;
+        private static readonly ILog log = LogManager.GetLogger<MemcachedClient>();
 
         private IServerPool pool;
         private IMemcachedKeyTransformer keyTransformer;
@@ -127,7 +127,7 @@ namespace Enyim.Caching
             }
             else
             {
-                _loggger.LogError($"Unable to locate memcached node");
+                log.Error($"Unable to locate memcached node");
             }
 
             result.Success = false;
@@ -273,13 +273,6 @@ namespace Enyim.Caching
 
             statusCode = -1;
             
-
-            if (value == null)
-            {
-                result.Fail("value is null");
-                return result;
-            }
-
             if (node != null)
             {
                 CacheItem item;
@@ -287,7 +280,7 @@ namespace Enyim.Caching
                 try { item = this.transcoder.Serialize(value); }
                 catch (Exception e)
                 {
-                    _loggger.LogError("PerformStore", e);
+                    log.Error("PerformStore", e);
 
                     result.Fail("PerformStore failed", e);
                     return result;
@@ -335,7 +328,7 @@ namespace Enyim.Caching
                 try { item = this.transcoder.Serialize(value); }
                 catch (Exception e)
                 {
-                    _loggger.LogError("PerformStoreAsync", e);
+                    log.Error("PerformStoreAsync", e);
 
                     result.Fail("PerformStore failed", e);
                     return result;
@@ -821,7 +814,7 @@ namespace Enyim.Caching
                                         }
                                         catch (Exception e)
                                         {
-                                            _loggger.LogError("PerformMultiGet", e);
+                                            log.Error("PerformMultiGet", e);
                                         }
             });
             return retval;

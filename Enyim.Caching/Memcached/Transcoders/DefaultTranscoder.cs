@@ -28,25 +28,12 @@ namespace Enyim.Caching.Memcached
 			return this.Deserialize(item);
 		}
 
-        T ITranscoder.Deserialize<T>(CacheItem item)
+	    public T Deserialize<T>(CacheItem item)
         {
-            if (item.Data == null || item.Data.Count == 0) return default(T);
-
-            using (var ms = new MemoryStream(item.Data.ToArray()))
-            {
-                using (BsonReader reader = new BsonReader(ms))
-                {
-                    if(typeof(T).GetTypeInfo().ImplementedInterfaces.Contains(typeof(IEnumerable)))
-                    {
-                        reader.ReadRootValueAsArray = true;
-                    }
-                    JsonSerializer serializer = new JsonSerializer();
-                    return serializer.Deserialize<T>(reader);
-                }
-            }
+            return (T)this.Deserialize(item);
         }
 
-        protected virtual CacheItem Serialize(object value)
+	    protected CacheItem Serialize(object value)
 		{
 			// raw data is a special case when some1 passes in a buffer (byte[] or ArraySegment<byte>)
 			if (value is ArraySegment<byte>)
@@ -66,34 +53,70 @@ namespace Enyim.Caching.Memcached
 			}            
 
             ArraySegment<byte> data;
-            TypeCode code = value.GetType().GetTypeCode();
 
-            //TypeCode code = value == null ? TypeCode.DBNull : Type.GetTypeCode(value.GetType());
+            TypeCode code;
 
-            switch (code)
-			{
-				//case TypeCode.DBNull: data = this.SerializeNull(); break;
-				case TypeCode.String: data = this.SerializeString((String)value); break;
-				case TypeCode.Boolean: data = this.SerializeBoolean((Boolean)value); break;
-				case TypeCode.SByte: data = this.SerializeSByte((SByte)value); break;
-				case TypeCode.Byte: data = this.SerializeByte((Byte)value); break;
-				case TypeCode.Int16: data = this.SerializeInt16((Int16)value); break;
-				case TypeCode.Int32: data = this.SerializeInt32((Int32)value); break;
-				case TypeCode.Int64: data = this.SerializeInt64((Int64)value); break;
-				case TypeCode.UInt16: data = this.SerializeUInt16((UInt16)value); break;
-				case TypeCode.UInt32: data = this.SerializeUInt32((UInt32)value); break;
-				case TypeCode.UInt64: data = this.SerializeUInt64((UInt64)value); break;
-				case TypeCode.Char: data = this.SerializeChar((Char)value); break;
-				case TypeCode.DateTime: data = this.SerializeDateTime((DateTime)value); break;
-				case TypeCode.Double: data = this.SerializeDouble((Double)value); break;
-				case TypeCode.Single: data = this.SerializeSingle((Single)value); break;
-				default:
-					code = TypeCode.Object;
-					data = this.SerializeObject(value);
-					break;
-			}
+            if (value == null)
+            {
+                code = TypeCode.Empty;
+                data = NullArray;
+            }
+            else
+            {
+                code = value.GetType().GetTypeCode();
+                switch (code)
+                {
+                    //case TypeCode.DBNull: data = this.SerializeNull(); break;
+                    case TypeCode.String:
+                        data = this.SerializeString((String) value);
+                        break;
+                    case TypeCode.Boolean:
+                        data = this.SerializeBoolean((Boolean) value);
+                        break;
+                    case TypeCode.SByte:
+                        data = this.SerializeSByte((SByte) value);
+                        break;
+                    case TypeCode.Byte:
+                        data = this.SerializeByte((Byte) value);
+                        break;
+                    case TypeCode.Int16:
+                        data = this.SerializeInt16((Int16) value);
+                        break;
+                    case TypeCode.Int32:
+                        data = this.SerializeInt32((Int32) value);
+                        break;
+                    case TypeCode.Int64:
+                        data = this.SerializeInt64((Int64) value);
+                        break;
+                    case TypeCode.UInt16:
+                        data = this.SerializeUInt16((UInt16) value);
+                        break;
+                    case TypeCode.UInt32:
+                        data = this.SerializeUInt32((UInt32) value);
+                        break;
+                    case TypeCode.UInt64:
+                        data = this.SerializeUInt64((UInt64) value);
+                        break;
+                    case TypeCode.Char:
+                        data = this.SerializeChar((Char) value);
+                        break;
+                    case TypeCode.DateTime:
+                        data = this.SerializeDateTime((DateTime) value);
+                        break;
+                    case TypeCode.Double:
+                        data = this.SerializeDouble((Double) value);
+                        break;
+                    case TypeCode.Single:
+                        data = this.SerializeSingle((Single) value);
+                        break;
+                    default:
+                        code = TypeCode.Object;
+                        data = this.SerializeObject(value);
+                        break;
+                }
+            }
 
-			return new CacheItem(TypeCodeToFlag(code), data);
+            return new CacheItem(TypeCodeToFlag(code), data);
 		}
 
 		public static uint TypeCodeToFlag(TypeCode code)
@@ -106,7 +129,7 @@ namespace Enyim.Caching.Memcached
 			return (flag & 0x100) == 0x100;
 		}
 
-		protected virtual object Deserialize(CacheItem item)
+		protected object Deserialize(CacheItem item)
 		{
 			if (item.Data.Array == null)
 				return null;
@@ -165,7 +188,7 @@ namespace Enyim.Caching.Memcached
 				// earlier versions serialized decimals with TypeCode.Decimal
 				// even though they were saved by BinaryFormatter
 				case TypeCode.Decimal:
-				//case TypeCode.Object: return this.DeserializeObject(data);
+				case TypeCode.Object: return this.DeserializeObject(data);
 				default: throw new InvalidOperationException("Unknown TypeCode was returned: " + code);
 			}
 		}       
