@@ -47,7 +47,7 @@ namespace MemcachedTest
 		public async Task TestThrottlingFailurePolicy()
 		{
 			var config = new MemcachedClientConfiguration();
-			config.AddServer("nonexisting.enyim.com:2244");
+			config.AddServer("127.0.0.1:2244");
 
 			config.SocketPool.FailurePolicyFactory = new ThrottlingFailurePolicyFactory(4, TimeSpan.FromMilliseconds(2000));
 			config.SocketPool.ConnectionTimeout = TimeSpan.FromMilliseconds(10);

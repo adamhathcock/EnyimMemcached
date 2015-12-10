@@ -47,8 +47,8 @@ namespace Enyim.Caching
 
         public MemcachedClient(IMemcachedClientConfiguration configuration)
         {
-            configuration.SocketPool.MinPoolSize = 20;
             configuration.SocketPool.MaxPoolSize = 1000;
+            configuration.SocketPool.MinPoolSize = 20;
             configuration.SocketPool.ConnectionTimeout = new TimeSpan(0, 0, 3);
             configuration.SocketPool.ReceiveTimeout = new TimeSpan(0, 0, 3);
             configuration.SocketPool.DeadTimeout = new TimeSpan(0, 0, 3);
@@ -757,68 +757,68 @@ namespace Enyim.Caching
         /// </summary>
         /// <param name="keys">The list of identifiers for the items to retrieve.</param>
         /// <returns>a Dictionary holding all items indexed by their key.</returns>
-        public IDictionary<string, object> Get(IEnumerable<string> keys)
-        {
-            return PerformMultiGet<object>(keys, (mget, kvp) => this.transcoder.Deserialize(kvp.Value));
-        }
+        //public IDictionary<string, object> Get(IEnumerable<string> keys)
+        //{
+        //    return PerformMultiGet<object>(keys, (mget, kvp) => this.transcoder.Deserialize(kvp.Value));
+        //}
 
-        public IDictionary<string, CasResult<object>> GetWithCas(IEnumerable<string> keys)
-        {
-            return PerformMultiGet<CasResult<object>>(keys, (mget, kvp) => new CasResult<object>
-            {
-                Result = this.transcoder.Deserialize(kvp.Value),
-                Cas = mget.Cas[kvp.Key]
-            });
-        }
+        //public IDictionary<string, CasResult<object>> GetWithCas(IEnumerable<string> keys)
+        //{
+        //    return PerformMultiGet<CasResult<object>>(keys, (mget, kvp) => new CasResult<object>
+        //    {
+        //        Result = this.transcoder.Deserialize(kvp.Value),
+        //        Cas = mget.Cas[kvp.Key]
+        //    });
+        //}
 
-        protected virtual IDictionary<string, T> PerformMultiGet<T>(IEnumerable<string> keys, Func<IMultiGetOperation, KeyValuePair<string, CacheItem>, T> collector)
-        {
-            // transform the keys and index them by hashed => original
-            // the mget results will be mapped using this index
-            var hashed = new Dictionary<string, string>();
-            foreach (var key in keys) hashed[this.keyTransformer.Transform(key)] = key;
+        //protected virtual IDictionary<string, T> PerformMultiGet<T>(IEnumerable<string> keys, Func<IMultiGetOperation, KeyValuePair<string, CacheItem>, T> collector)
+        //{
+        //    // transform the keys and index them by hashed => original
+        //    // the mget results will be mapped using this index
+        //    var hashed = new Dictionary<string, string>();
+        //    foreach (var key in keys) hashed[this.keyTransformer.Transform(key)] = key;
 
-            var byServer = GroupByServer(hashed.Keys);
+        //    var byServer = GroupByServer(hashed.Keys);
 
-            var retval = new Dictionary<string, T>(hashed.Count);
+        //    var retval = new Dictionary<string, T>(hashed.Count);
 
-            //execute each list of keys on their respective node
+        //    //execute each list of keys on their respective node
 
-            Parallel.ForEach(byServer, slice =>
-            {
-                                        try
-                                        {
-                                            var node = slice.Key;
+        //    Parallel.ForEach(byServer, slice =>
+        //    {
+        //                                try
+        //                                {
+        //                                    var node = slice.Key;
 
-                                           var nodeKeys = slice.Value;
-                                           var mget = this.pool.OperationFactory.MultiGet(nodeKeys);
+        //                                   var nodeKeys = slice.Value;
+        //                                   var mget = this.pool.OperationFactory.MultiGet(nodeKeys);
                                            
-                                           var opResult = node.Execute(mget);
-                                           if (opResult.Success)
-                                           {
-                                               // deserialize the items in the dictionary
-                                               foreach (var kvp in mget.Result)
-                                               {
-                                                   string original;
-                                                   if (hashed.TryGetValue(kvp.Key, out original))
-                                                   {
-                                                       var result = collector(mget, kvp);
+        //                                   var opResult = node.Execute(mget);
+        //                                   if (opResult.Success)
+        //                                   {
+        //                                       // deserialize the items in the dictionary
+        //                                       foreach (var kvp in mget.Result)
+        //                                       {
+        //                                           string original;
+        //                                           if (hashed.TryGetValue(kvp.Key, out original))
+        //                                           {
+        //                                               var result = collector(mget, kvp);
 
-                                                       // the lock will serialize the merge,
-                                                       // but at least the commands were not waiting on each other
-                                                       lock (retval)
-                                                           retval[original] = result;
-                                                   }
-                                               }
-                                           }
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            log.Error("PerformMultiGet", e);
-                                        }
-            });
-            return retval;
-        }
+        //                                               // the lock will serialize the merge,
+        //                                               // but at least the commands were not waiting on each other
+        //                                               lock (retval)
+        //                                                   retval[original] = result;
+        //                                           }
+        //                                       }
+        //                                   }
+        //                                }
+        //                                catch (Exception e)
+        //                                {
+        //                                    log.Error("PerformMultiGet", e);
+        //                                }
+        //    });
+        //    return retval;
+        //}
 
         protected Dictionary<IMemcachedNode, IList<string>> GroupByServer(IEnumerable<string> keys)
         {
