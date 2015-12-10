@@ -17,7 +17,7 @@ namespace MemcachedTest
 		public async Task TestIfCalled()
 		{
 			var config = new MemcachedClientConfiguration();
-			config.AddServer("nonexisting.enyim.com:2244");
+			config.AddServer("127.0.0.1:2244");
 
 			config.SocketPool.FailurePolicyFactory = new FakePolicy();
 			config.SocketPool.ConnectionTimeout = TimeSpan.FromSeconds(4);

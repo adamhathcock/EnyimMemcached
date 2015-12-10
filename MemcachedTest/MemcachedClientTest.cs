@@ -175,7 +175,7 @@ namespace MemcachedTest
 
 				Thread.Sleep(8000);
 
-				Assert.Null((await client.GetAsync<string>("ExpirationTest:DateTime")).Value);
+				Assert.Null((await client.GetAsync<string>("Expires:DateTime")).Value);
 			}
 		}
 

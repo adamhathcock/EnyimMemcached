@@ -106,7 +106,7 @@ namespace Enyim.Caching.Memcached
                 this.Read(data, 0, available);
 
                 if (log.IsWarnEnabled)
-                    log.Warn(Encoding.UTF8.GetString(data));
+                    log.Warn(Encoding.ASCII.GetString(data));
             }
 
             if (log.IsDebugEnabled)
