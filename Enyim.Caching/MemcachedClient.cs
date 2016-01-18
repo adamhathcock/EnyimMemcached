@@ -358,13 +358,13 @@ namespace Enyim.Caching
         /// <summary>
         /// Removes all data from the cache. Note: this will invalidate all data on all servers in the pool.
         /// </summary>
-        public void FlushAll()
+        public async Task FlushAllAsync()
         {
             foreach (var node in this.pool.GetWorkingNodes())
             {
                 var command = this.pool.OperationFactory.Flush();
 
-                node.Execute(command);
+                await node.ExecuteAsync(command).ConfigureAwait(false);
             }
         }
 
@@ -372,41 +372,14 @@ namespace Enyim.Caching
         /// Returns statistics about the servers.
         /// </summary>
         /// <returns></returns>
-        public ServerStats Stats()
-        {
-            return this.Stats(null);
-        }
-
-        public ServerStats Stats(string type)
+        public async Task<ServerStats> StatsAsync(string type = null)
         {
             var results = new Dictionary<IPEndPoint, Dictionary<string, string>>();
-            var handles = new List<WaitHandle>();
 
             foreach (var node in this.pool.GetWorkingNodes())
             {
                 var cmd = this.pool.OperationFactory.Stats(type);
-                var action = new Func<IOperation, IOperationResult>(node.Execute);
-                var mre = new ManualResetEvent(false);
-
-                handles.Add(mre);
-
-                action.BeginInvoke(cmd, iar =>
-                {
-                    using (iar.AsyncWaitHandle)
-                    {
-                        action.EndInvoke(iar);
-
-                        lock (results)
-                            results[((IMemcachedNode)iar.AsyncState).EndPoint] = cmd.Result;
-
-                        mre.Set();
-                    }
-                }, node);
-            }
-
-            if (handles.Count > 0)
-            {
-                SafeWaitAllAndDispose(handles.ToArray());
+                await node.ExecuteAsync(cmd);
             }
 
             return new ServerStats(results);
@@ -437,27 +410,6 @@ namespace Enyim.Caching
 
             result.Fail("Unable to locate memcached node");
             return result;
-        }
-        /// <summary>
-        /// Waits for all WaitHandles and works in both STA and MTA mode.
-        /// </summary>
-        /// <param name="waitHandles"></param>
-        private static void SafeWaitAllAndDispose(WaitHandle[] waitHandles)
-        {
-            try
-            {
-                //Not support .NET Core
-                //if (Thread.CurrentThread.GetApartmentState() == ApartmentState.MTA)
-                //    WaitHandle.WaitAll(waitHandles);
-                //else
-                    for (var i = 0; i < waitHandles.Length; i++)
-                        waitHandles[i].WaitOne();
-            }
-            finally
-            {
-                for (var i = 0; i < waitHandles.Length; i++)
-                    waitHandles[i].Dispose();
-            }
         }
 
         #region [ Expiration helper            ]

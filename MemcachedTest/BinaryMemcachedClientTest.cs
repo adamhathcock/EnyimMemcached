@@ -12,12 +12,12 @@ namespace MemcachedTest
     ///</summary>
     public class BinaryMemcachedClientTest : MemcachedClientTest
     {
-        protected override MemcachedClient GetClient()
+        protected override async Task<MemcachedClient> GetClient()
         {
             var config = new MemcachedClientConfiguration();
             config.AddServer("127.0.0.1", 11211);
             MemcachedClient client = new MemcachedClient(config);
-            client.FlushAll();
+            await client.FlushAllAsync();
 
             return client;
         }
@@ -25,7 +25,7 @@ namespace MemcachedTest
         [Fact]
         public async Task IncrementTest()
         {
-            using (MemcachedClient client = GetClient())
+            using (MemcachedClient client = await GetClient())
             {
                 Assert.Equal(100, (int)(await client.IncrementAsync("VALUE", 100, 2)).Value);
                 Assert.Equal(124, (int)(await client.IncrementAsync("VALUE", 10, 24)).Value);
@@ -35,7 +35,7 @@ namespace MemcachedTest
         [Fact]
         public async Task DecrementTest()
         {
-            using (MemcachedClient client = GetClient())
+            using (MemcachedClient client = await GetClient())
             {
                 Assert.Equal(100, (int)(await client.DecrementAsync("VALUE", 100, 2)).Value);
                 Assert.Equal(76, (int)(await client.DecrementAsync("VALUE", 10, 24)).Value);
@@ -47,7 +47,7 @@ namespace MemcachedTest
         //[Fact] doesn't pass in master anyway
         public async Task IncrementNoDefaultTest()
         {
-            using (MemcachedClient client = GetClient())
+            using (MemcachedClient client = await GetClient())
             {
                 Assert.Null((await client.GetAsync<string>("VALUE")).Value);
 
@@ -61,7 +61,7 @@ namespace MemcachedTest
         [Fact]
         public async Task CASTest()
         {
-            using (MemcachedClient client = GetClient())
+            using (MemcachedClient client = await GetClient())
             {
                 // store the item
                 var r1 = await client.StoreAsync(StoreMode.Set, "CasItem1", "foo");
@@ -91,7 +91,7 @@ namespace MemcachedTest
         [Fact]
         public async Task AppendCASTest()
         {
-            using (MemcachedClient client = GetClient())
+            using (MemcachedClient client = await GetClient())
             {
                 // store the item
                 var r1 = await client.StoreAsync(StoreMode.Set, "CasAppend", "foo");
@@ -117,7 +117,7 @@ namespace MemcachedTest
         [Fact]
         public async Task PrependCASTest()
         {
-            using (MemcachedClient client = GetClient())
+            using (MemcachedClient client = await GetClient())
             {
                 // store the item
                 var r1 = await client.StoreAsync(StoreMode.Set, "CasPrepend", "ool");

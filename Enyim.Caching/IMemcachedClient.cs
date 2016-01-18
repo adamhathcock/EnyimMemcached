@@ -1,6 +1,5 @@
 ﻿using System;
 using Enyim.Caching.Memcached;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Enyim.Caching.Memcached.Results;
 
@@ -21,11 +20,11 @@ namespace Enyim.Caching
         Task<IMutateOperationResult> IncrementAsync(string key, ulong defaultValue, ulong delta, DateTime? expiresAt, ulong? cas);
         Task<IMutateOperationResult> IncrementAsync(string key, ulong defaultValue, ulong delta, TimeSpan? validFor, ulong? cas);
         
-        void FlushAll();
+        Task FlushAllAsync();
+        
+        Task<ServerStats> StatsAsync(string type = null);
 
-		ServerStats Stats();
-		ServerStats Stats(string type);
 
-		event Action<IMemcachedNode> NodeFailed;
+        event Action<IMemcachedNode> NodeFailed;
 	}
 }

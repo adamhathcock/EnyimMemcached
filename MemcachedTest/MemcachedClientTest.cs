@@ -1,10 +1,7 @@
 using System;
-using System.Net;
 using System.Threading;
 using Enyim.Caching;
-using Enyim.Caching.Configuration;
 using Enyim.Caching.Memcached;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -16,7 +13,7 @@ namespace MemcachedTest
 		private static readonly Enyim.Caching.ILog log = Enyim.Caching.LogManager.GetLogger(typeof(MemcachedClientTest));
 		public const string TestObjectKey = "Hello_World";
 
-		protected abstract MemcachedClient GetClient();
+		protected abstract Task<MemcachedClient> GetClient();
         
 		public class TestData
 		{
@@ -40,7 +37,7 @@ namespace MemcachedTest
 			td.FieldC = 19810619;
 			td.FieldD = true;
 
-			using (MemcachedClient client = GetClient())
+			using (MemcachedClient client = await GetClient())
 			{
 				Assert.True((await client.StoreAsync(StoreMode.Set, TestObjectKey, td)).Success);
 			}
@@ -74,7 +71,7 @@ namespace MemcachedTest
 		[Fact]
 		public async Task DeleteObjectTest()
 		{
-			using (MemcachedClient client = GetClient())
+			using (MemcachedClient client = await GetClient())
 			{
 				TestData td = new TestData();
 				Assert.True((await client.StoreAsync(StoreMode.Set, TestObjectKey, td)).Success, "Initialization failed.");
@@ -87,7 +84,7 @@ namespace MemcachedTest
 		[Fact]
 		public async Task StoreStringTest()
 		{
-			using (MemcachedClient client = GetClient())
+			using (MemcachedClient client = await GetClient())
 			{
 				Assert.True((await client.StoreAsync(StoreMode.Set, "TestString", "Hello world!")).Success, "StoreString failed.");
                 
@@ -98,7 +95,7 @@ namespace MemcachedTest
 		[Fact]
 		public async Task StoreNullTest()
 		{
-			using (MemcachedClient client = GetClient())
+			using (MemcachedClient client = await GetClient())
 			{
 				Assert.True((await client.StoreAsync(StoreMode.Set, "TestNull", null)).Success, "StoreNull failed.");
                 
@@ -109,7 +106,7 @@ namespace MemcachedTest
 		[Fact]
 		public async Task StoreLongTest()
 		{
-			using (MemcachedClient client = GetClient())
+			using (MemcachedClient client = await GetClient())
 			{
 				Assert.True((await client.StoreAsync(StoreMode.Set, "TestLong", 65432123456L)).Success, "StoreLong failed.");
 
@@ -130,7 +127,7 @@ namespace MemcachedTest
 				}
 			}
 
-			using (MemcachedClient client = GetClient())
+			using (MemcachedClient client = await GetClient())
 			{
 				Assert.True((await client.StoreAsync(StoreMode.Set, "BigBuffer", bigBuffer)).Success, "StoreArray failed");
 
@@ -153,7 +150,7 @@ namespace MemcachedTest
 		[Fact]
 		public async Task ExpirationTestTimeSpan()
 		{
-			using (MemcachedClient client = GetClient())
+			using (MemcachedClient client = await GetClient())
 			{
 				Assert.True((await client.StoreAsync(StoreMode.Set, "ExpirationTest:TimeSpan", "ExpirationTest:TimeSpan", new TimeSpan(0, 0, 5))).Success, "Expires:Timespan failed");
 				Assert.Equal("ExpirationTest:TimeSpan", (await client.GetAsync<string>("ExpirationTest:TimeSpan")).Value);
@@ -166,7 +163,7 @@ namespace MemcachedTest
 		[Fact]
 		public async Task ExpirationTestDateTime()
 		{
-			using (MemcachedClient client = GetClient())
+			using (MemcachedClient client = await GetClient())
 			{
 				DateTime expiresAt = DateTime.Now.AddSeconds(5);
 
@@ -182,7 +179,7 @@ namespace MemcachedTest
 		[Fact]
 		public async Task AddSetReplaceTest()
 		{
-			using (MemcachedClient client = GetClient())
+			using (MemcachedClient client = await GetClient())
 			{
 				log.Debug("Cache should be empty.");
 
@@ -333,7 +330,7 @@ namespace MemcachedTest
 		[Fact]
 		public async Task FlushTest()
 		{
-			using (MemcachedClient client = GetClient())
+			using (MemcachedClient client = await GetClient())
 			{
 				Assert.True((await client.StoreAsync(StoreMode.Set, "qwer", "1")).Success, "Initialization failed");
 				Assert.True((await client.StoreAsync(StoreMode.Set, "tyui", "1")).Success, "Initialization failed");
@@ -344,7 +341,7 @@ namespace MemcachedTest
                 
                 Assert.Equal("1", (await client.GetAsync<string>("mnbv")).Value);
 
-                client.FlushAll();
+                await client.FlushAllAsync();
                 
                 Assert.Null((await client.GetAsync<string>("qwer")).Value);
                 Assert.Null((await client.GetAsync<string>("tyui")).Value);
@@ -360,7 +357,7 @@ namespace MemcachedTest
 		{
 			var initialValue = 56UL * (ulong)System.Math.Pow(10, 11) + 1234;
 
-			using (MemcachedClient client = GetClient())
+			using (MemcachedClient client = await GetClient())
 			{
 				Assert.Equal(initialValue, (await client.IncrementAsync("VALUE", initialValue, 2UL)).Value);
 				Assert.Equal(initialValue + 24, (await client.IncrementAsync("VALUE", 10UL, 24UL)).Value);
