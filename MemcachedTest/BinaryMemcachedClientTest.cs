@@ -99,9 +99,9 @@ namespace MemcachedTest
                 Assert.True(r1.Success, "Initial set failed.");
                 Assert.NotEqual(r1.Cas, (ulong)0);
 
-                var r2 = client.Append("CasAppend", r1.Cas, new System.ArraySegment<byte>(new byte[] { (byte)'l' }));
+                var r2 = await client.AppendAsync("CasAppend", r1.Cas, new System.ArraySegment<byte>(new byte[] { (byte)'l' }));
 
-                Assert.True(r2.Result, "Append should have succeeded.");
+                Assert.True(r2.Success, "Append should have succeeded.");
 
                 // get back the item and check the cas value (it should match the cas from the set)
                 var r3 = await client.GetAsync<string>("CasAppend");
@@ -109,8 +109,8 @@ namespace MemcachedTest
                 Assert.Equal(r3.Value, "fool");
                 Assert.Equal(r2.Cas, r3.Cas);
 
-                var r4 = client.Append("CasAppend", r1.Cas, new System.ArraySegment<byte>(new byte[] { (byte)'l' }));
-                Assert.False(r4.Result, "Append with invalid CAS should have failed.");
+                var r4 = await client.AppendAsync("CasAppend", r1.Cas, new System.ArraySegment<byte>(new byte[] { (byte)'l' }));
+                Assert.False(r4.Success, "Append with invalid CAS should have failed.");
             }
         }
 
@@ -125,9 +125,9 @@ namespace MemcachedTest
                 Assert.True(r1.Success, "Initial set failed.");
                 Assert.NotEqual(r1.Cas, (ulong)0);
 
-                var r2 = client.Prepend("CasPrepend", r1.Cas, new System.ArraySegment<byte>(new byte[] { (byte)'f' }));
+                var r2 = await client.PrependAsync("CasPrepend", r1.Cas, new System.ArraySegment<byte>(new byte[] { (byte)'f' }));
 
-                Assert.True(r2.Result, "Prepend should have succeeded.");
+                Assert.True(r2.Success, "Prepend should have succeeded.");
 
                 // get back the item and check the cas value (it should match the cas from the set)
                 var r3 = await client.GetAsync<string>("CasPrepend");
@@ -135,8 +135,8 @@ namespace MemcachedTest
                 Assert.Equal(r3.Value, "fool");
                 Assert.Equal(r2.Cas, r3.Cas);
 
-                var r4 = client.Prepend("CasPrepend", r1.Cas, new System.ArraySegment<byte>(new byte[] { (byte)'l' }));
-                Assert.False(r4.Result, "Prepend with invalid CAS should have failed.");
+                var r4 = await client.PrependAsync("CasPrepend", r1.Cas, new System.ArraySegment<byte>(new byte[] { (byte)'l' }));
+                Assert.False(r4.Success, "Prepend with invalid CAS should have failed.");
             }
         }
     }

@@ -23,10 +23,10 @@ namespace MemcachedTest
 		{
 			using (MemcachedClient client = GetClient())
 			{
-				Assert.True((await client.StoreAsync(StoreMode.Set, "VALUE", "100")).Success, "Initialization failed");
+				Assert.True((await client.StoreAsync(StoreMode.Set, "VALUE2", "100")).Success, "Initialization failed");
 
-				Assert.Equal(102UL, (await client.IncrementAsync("VALUE", 0, 2)).Value);
-				Assert.Equal(112UL, (await client.IncrementAsync("VALUE", 0, 10)).Value);
+				Assert.Equal(102UL, (await client.IncrementAsync("VALUE2", 0, 2)).Value);
+				Assert.Equal(112UL, (await client.IncrementAsync("VALUE2", 0, 10)).Value);
 			}
 		}
 

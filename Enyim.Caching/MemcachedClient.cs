@@ -17,7 +17,7 @@ namespace Enyim.Caching
     /// <summary>
     /// Memcached client.
     /// </summary>
-    public partial class MemcachedClient : IMemcachedClient, IMemcachedResultsClient
+    public partial class MemcachedClient : IMemcachedClient
     {
         /// <summary>
         /// Represents a value which indicates that an item should never expire.
@@ -299,31 +299,6 @@ namespace Enyim.Caching
 
         #endregion
         #region [ Concatenate                  ]
-
-        /// <summary>
-        /// Appends the data to the end of the specified item's data on the server.
-        /// </summary>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="data">The data to be appended to the item.</param>
-        /// <returns>true if the data was successfully stored; false otherwise.</returns>
-        public bool Append(string key, ArraySegment<byte> data)
-        {
-            ulong cas = 0;
-
-            return this.PerformConcatenate(ConcatenationMode.Append, key, ref cas, data).Success;
-        }
-
-        /// <summary>
-        /// Inserts the data before the specified item's data on the server.
-        /// </summary>
-        /// <returns>true if the data was successfully stored; false otherwise.</returns>
-        public bool Prepend(string key, ArraySegment<byte> data)
-        {
-            ulong cas = 0;
-
-            return this.PerformConcatenate(ConcatenationMode.Prepend, key, ref cas, data).Success;
-        }
-
         /// <summary>
         /// Appends the data to the end of the specified item's data on the server, but only if the item's version matches the CAS value provided.
         /// </summary>
@@ -331,12 +306,9 @@ namespace Enyim.Caching
         /// <param name="cas">The cas value which must match the item's version.</param>
         /// <param name="data">The data to be prepended to the item.</param>
         /// <returns>true if the data was successfully stored; false otherwise.</returns>
-        public CasResult<bool> Append(string key, ulong cas, ArraySegment<byte> data)
+        public async Task<IConcatOperationResult> AppendAsync(string key, ulong? cas, ArraySegment<byte> data)
         {
-            ulong tmp = cas;
-            var success = PerformConcatenate(ConcatenationMode.Append, key, ref tmp, data);
-
-            return new CasResult<bool> { Cas = tmp, Result = success.Success };
+            return await PerformConcatenateAsync(ConcatenationMode.Append, key, cas, data).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -346,15 +318,12 @@ namespace Enyim.Caching
         /// <param name="cas">The cas value which must match the item's version.</param>
         /// <param name="data">The data to be prepended to the item.</param>
         /// <returns>true if the data was successfully stored; false otherwise.</returns>
-        public CasResult<bool> Prepend(string key, ulong cas, ArraySegment<byte> data)
+        public async Task<IConcatOperationResult> PrependAsync(string key, ulong? cas, ArraySegment<byte> data)
         {
-            ulong tmp = cas;
-            var success = PerformConcatenate(ConcatenationMode.Prepend, key, ref tmp, data);
-
-            return new CasResult<bool> { Cas = tmp, Result = success.Success };
+            return await PerformConcatenateAsync(ConcatenationMode.Prepend, key, cas, data).ConfigureAwait(false);
         }
 
-        protected virtual IConcatOperationResult PerformConcatenate(ConcatenationMode mode, string key, ref ulong cas, ArraySegment<byte> data)
+        private async Task<IConcatOperationResult> PerformConcatenateAsync(ConcatenationMode mode, string key, ulong? cas, ArraySegment<byte> data)
         {
             var hashedKey = this.keyTransformer.Transform(key);
             var node = this.pool.Locate(hashedKey);
@@ -362,12 +331,12 @@ namespace Enyim.Caching
 
             if (node != null)
             {
-                var command = this.pool.OperationFactory.Concat(mode, hashedKey, cas, data);
-                var commandResult = node.Execute(command);
+                var command = this.pool.OperationFactory.Concat(mode, hashedKey, cas ?? 0, data);
+                var commandResult = await node.ExecuteAsync(command).ConfigureAwait(false);
 
                 if (commandResult.Success)
                 {
-                    result.Cas = cas = command.CasValue;
+                    result.Cas = command.CasValue;
                     result.StatusCode = command.StatusCode;
                     result.Pass();
                 }

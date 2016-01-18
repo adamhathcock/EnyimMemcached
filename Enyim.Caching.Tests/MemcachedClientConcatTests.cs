@@ -20,7 +20,7 @@ namespace Enyim.Caching.Tests
 
 			var toAppend = "The End";
 			var data = new ArraySegment<byte>(Encoding.ASCII.GetBytes(toAppend));
-			var concatResult = _Client.ExecuteAppend(key, data);
+			var concatResult = await _Client.AppendAsync(key, data);
 			ConcatAssertPass(concatResult);
 
             var getResult = await _Client.GetAsync<string>(key);
@@ -35,7 +35,7 @@ namespace Enyim.Caching.Tests
 
 			var toAppend = "The End";
 			var data = new ArraySegment<byte>(Encoding.ASCII.GetBytes(toAppend));
-			var concatResult = _Client.ExecuteAppend(key, data);
+			var concatResult = await _Client.AppendAsync(key, data);
 			ConcatAssertFail(concatResult);
 
 			var getResult = await _Client.GetAsync<string>(key);
@@ -54,7 +54,7 @@ namespace Enyim.Caching.Tests
 
 			var toPrepend = "The Beginning";
 			var data = new ArraySegment<byte>(Encoding.ASCII.GetBytes(toPrepend));
-			var concatResult = _Client.ExecutePrepend(key, data);
+			var concatResult = await _Client.PrependAsync(key, data);
 			ConcatAssertPass(concatResult);
 
             var getResult = await _Client.GetAsync<string>(key);
@@ -69,7 +69,7 @@ namespace Enyim.Caching.Tests
 
 			var toPrepend = "The End";
 			var data = new ArraySegment<byte>(Encoding.ASCII.GetBytes(toPrepend));
-			var concatResult = _Client.ExecutePrepend(key, data);
+			var concatResult = await _Client.PrependAsync(key, data);
 			ConcatAssertFail(concatResult);
 
             var getResult = await _Client.GetAsync<string>(key);
@@ -88,7 +88,7 @@ namespace Enyim.Caching.Tests
 
 			var toAppend = "The End";
 			var data = new ArraySegment<byte>(Encoding.ASCII.GetBytes(toAppend));
-			var concatResult = _Client.ExecuteAppend(key, storeResult.Cas, data);
+			var concatResult = await _Client.AppendAsync(key, storeResult.Cas, data);
 			ConcatAssertPass(concatResult);
 
             var getResult = await _Client.GetAsync<string>(key);
@@ -107,7 +107,7 @@ namespace Enyim.Caching.Tests
 
 			var toAppend = "The End";
 			var data = new ArraySegment<byte>(Encoding.ASCII.GetBytes(toAppend));
-			var concatResult = _Client.ExecuteAppend(key, storeResult.Cas - 1, data);
+			var concatResult = await _Client.AppendAsync(key, storeResult.Cas - 1, data);
 			ConcatAssertFail(concatResult);
 		}
 
@@ -122,7 +122,7 @@ namespace Enyim.Caching.Tests
 
 			var tpPrepend = "The Beginning";
 			var data = new ArraySegment<byte>(Encoding.ASCII.GetBytes(tpPrepend));
-			var concatResult = _Client.ExecuteAppend(key, storeResult.Cas, data);
+			var concatResult = await _Client.AppendAsync(key, storeResult.Cas, data);
 			ConcatAssertPass(concatResult);
 
             var getResult = await _Client.GetAsync<string>(key);
@@ -141,7 +141,7 @@ namespace Enyim.Caching.Tests
 
 			var tpPrepend = "The Beginning";
 			var data = new ArraySegment<byte>(Encoding.ASCII.GetBytes(tpPrepend));
-			var concatResult = _Client.ExecuteAppend(key, storeResult.Cas - 1, data);
+			var concatResult = await _Client.AppendAsync(key, storeResult.Cas - 1, data);
 			ConcatAssertFail(concatResult);
 
 		}

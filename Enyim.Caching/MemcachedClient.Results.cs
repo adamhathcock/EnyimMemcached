@@ -10,73 +10,8 @@ using Enyim.Caching.Memcached.Results.Factories;
 
 namespace Enyim.Caching
 {
-	public partial class MemcachedClient : IMemcachedClient, IMemcachedResultsClient
+	public partial class MemcachedClient : IMemcachedClient
 	{
-		#region [ Concatenate		]
-
-		/// <summary>
-		/// Appends the data to the end of the specified item's data on the server.
-		/// </summary>
-		/// <param name="key">The key used to reference the item.</param>
-		/// <param name="data">The data to be appended to the item.</param>
-		/// <returns>true if the data was successfully stored; false otherwise.</returns>
-		public IConcatOperationResult ExecuteAppend(string key, ArraySegment<byte> data)
-		{
-			ulong cas = 0;
-
-			return this.PerformConcatenate(ConcatenationMode.Append, key, ref cas, data);
-		}
-
-		/// <summary>
-		/// Appends the data to the end of the specified item's data on the server, but only if the item's version matches the CAS value provided.
-		/// </summary>
-		/// <param name="key">The key used to reference the item.</param>
-		/// <param name="cas">The cas value which must match the item's version.</param>
-		/// <param name="data">The data to be prepended to the item.</param>
-		/// <returns>true if the data was successfully stored; false otherwise.</returns>
-		public IConcatOperationResult ExecuteAppend(string key, ulong cas, ArraySegment<byte> data)
-		{
-			ulong tmp = cas;
-			var result = PerformConcatenate(ConcatenationMode.Append, key, ref tmp, data);
-			if (result.Success)
-			{
-				result.Cas = tmp;
-			}
-			return result;
-		}
-
-		/// <summary>
-		/// Inserts the data before the specified item's data on the server.
-		/// </summary>
-		/// <returns>true if the data was successfully stored; false otherwise.</returns>
-		public IConcatOperationResult ExecutePrepend(string key, ArraySegment<byte> data)
-		{
-			ulong cas = 0;
-
-			return this.PerformConcatenate(ConcatenationMode.Prepend, key, ref cas, data);
-		}
-
-		/// <summary>
-		/// Inserts the data before the specified item's data on the server, but only if the item's version matches the CAS value provided.
-		/// </summary>
-		/// <param name="key">The key used to reference the item.</param>
-		/// <param name="cas">The cas value which must match the item's version.</param>
-		/// <param name="data">The data to be prepended to the item.</param>
-		/// <returns>true if the data was successfully stored; false otherwise.</returns>
-		public IConcatOperationResult ExecutePrepend(string key, ulong cas, ArraySegment<byte> data)
-		{
-			ulong tmp = cas;
-			var result = PerformConcatenate(ConcatenationMode.Prepend, key, ref tmp, data);
-
-			if (result.Success)
-			{
-				result.Cas = tmp;
-			}
-			return result;
-		}
-		
-		#endregion
-
 		#region [ Remove		]
 
 		/// <summary>
