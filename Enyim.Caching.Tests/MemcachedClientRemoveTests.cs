@@ -13,7 +13,7 @@ namespace Enyim.Caching.Tests
 		public async Task When_Removing_A_Valid_Key_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("remove");
-			var storeResult = Store(key: key);
+			var storeResult = await Store(key: key);
 			StoreAssertPass(storeResult);
 
 			var removeResult = _Client.ExecuteRemove(key);

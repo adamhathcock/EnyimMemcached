@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Enyim.Caching.Memcached;
 using Enyim.Caching.Memcached.Results;
 using Enyim.Caching.Memcached.Results.StatusCodes;
@@ -13,60 +14,60 @@ namespace Enyim.Caching.Tests
 	{
 
 		[Fact]
-		public void When_Storing_Item_With_New_Key_And_StoreMode_Add_Result_Is_Successful()
+		public async Task When_Storing_Item_With_New_Key_And_StoreMode_Add_Result_Is_Successful()
 		{
-			var result = Store(StoreMode.Add);
+			var result = await Store(StoreMode.Add);
 			StoreAssertPass(result);
 
 		}
 
 		[Fact]
-		public void When_Storing_Item_With_Existing_Key_And_StoreMode_Add_Result_Is_Not_Successful()
+		public async Task When_Storing_Item_With_Existing_Key_And_StoreMode_Add_Result_Is_Not_Successful()
 		{
 			var key = GetUniqueKey("store");
-			var result = Store(StoreMode.Add, key);
+			var result = await Store(StoreMode.Add, key);
 			StoreAssertPass(result);
 
-			result = Store(StoreMode.Add, key);
+			result = await Store(StoreMode.Add, key);
 			StoreAssertFail(result);
 		}
 
 		[Fact]
-		public void When_Storing_Item_With_New_Key_And_StoreMode_Replace_Result_Is_Not_Successful()
+		public async Task When_Storing_Item_With_New_Key_And_StoreMode_Replace_Result_Is_Not_Successful()
 		{
-			var result = Store(StoreMode.Replace);
+			var result = await Store(StoreMode.Replace);
 			Assert.Equal(result.StatusCode, (int)StatusCodeEnums.NotFound);
 			StoreAssertFail(result);
 
 		}
 
 		[Fact]
-		public void When_Storing_Item_With_Existing_Key_And_StoreMode_Replace_Result_Is_Successful()
+		public async Task When_Storing_Item_With_Existing_Key_And_StoreMode_Replace_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("store");
-			var result = Store(StoreMode.Add, key);
+			var result = await Store(StoreMode.Add, key);
 			StoreAssertPass(result);
 
-			result = Store(StoreMode.Replace, key);
+			result = await Store(StoreMode.Replace, key);
 			StoreAssertPass(result);
 		}
 
 		[Fact]
-		public void When_Storing_Item_With_New_Key_And_StoreMode_Set_Result_Is_Successful()
+		public async Task When_Storing_Item_With_New_Key_And_StoreMode_Set_Result_Is_Successful()
 		{
-			var result = Store(StoreMode.Set);
+			var result = await Store(StoreMode.Set);
 			StoreAssertPass(result);
 
 		}
 
 		[Fact]
-		public void When_Storing_Item_With_Existing_Key_And_StoreMode_Set_Result_Is_Successful()
+		public async Task When_Storing_Item_With_Existing_Key_And_StoreMode_Set_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("store");
-			var result = Store(StoreMode.Add, key);
+			var result = await Store(StoreMode.Add, key);
 			StoreAssertPass(result);
 
-			result = Store(StoreMode.Set, key);
+			result = await Store(StoreMode.Set, key);
 			StoreAssertPass(result);
 		}
 	}

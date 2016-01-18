@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Enyim.Caching.Tests
@@ -9,24 +10,24 @@ namespace Enyim.Caching.Tests
 	public class MemcachedClientMutateTests : MemcachedClientTestsBase
 	{
 		[Fact]
-		public void When_Incrementing_Value_Result_Is_Successful()
+		public async Task When_Incrementing_Value_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("mutate");
-			var mutateResult = _Client.ExecuteIncrement(key, 100, 10);
+			var mutateResult = await _Client.IncrementAsync(key, 100, 10);
 			MutateAssertPass(mutateResult, 100);
 
-			mutateResult = _Client.ExecuteIncrement(key, 100, 10);
+			mutateResult = await _Client.IncrementAsync(key, 100, 10);
 			MutateAssertPass(mutateResult, 110);
 		}
 
 		[Fact]
-		public void When_Decrementing_Value_Result_Is_Successful()
+		public async Task When_Decrementing_Value_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("mutate");
-			var mutateResult = _Client.ExecuteDecrement(key, 100, 10);
+			var mutateResult = await _Client.DecrementAsync(key, 100, 10);
 			MutateAssertPass(mutateResult, 100);
 
-			mutateResult = _Client.ExecuteDecrement(key, 100, 10);
+			mutateResult = await _Client.DecrementAsync(key, 100, 10);
 			MutateAssertPass(mutateResult, 90);
 		}
 	}

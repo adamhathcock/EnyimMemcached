@@ -136,196 +136,33 @@ namespace Enyim.Caching
         }
         
 
-        #region [ Store                        ]
-
-        /// <summary>
-        /// Inserts an item into the cache with a cache key to reference its location.
-        /// </summary>
-        /// <param name="mode">Defines how the item is stored in the cache.</param>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="value">The object to be inserted into the cache.</param>
-        /// <remarks>The item does not expire unless it is removed due memory pressure.</remarks>
-        /// <returns>true if the item was successfully stored in the cache; false otherwise.</returns>
-        public bool Store(StoreMode mode, string key, object value)
+        public async Task<IStoreOperationResult> StoreAsync(StoreMode mode, string key, object value, TimeSpan? validFor, ulong? cas)
         {
-            ulong tmp = 0;
-            int status;
-
-            return this.PerformStore(mode, key, value, 0, ref tmp, out status).Success;
+            return await this.PerformStoreAsync(mode, key, value, GetExpiration(validFor), cas).ConfigureAwait(false);
         }
-
-        /// <summary>
-        /// Inserts an item into the cache with a cache key to reference its location.
-        /// </summary>
-        /// <param name="mode">Defines how the item is stored in the cache.</param>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="value">The object to be inserted into the cache.</param>
-        /// <param name="validFor">The interval after the item is invalidated in the cache.</param>
-        /// <returns>true if the item was successfully stored in the cache; false otherwise.</returns>
-        public bool Store(StoreMode mode, string key, object value, TimeSpan validFor)
+        public async Task<IStoreOperationResult> StoreAsync(StoreMode mode, string key, object value, DateTime? validUntil, ulong? cas)
         {
-            ulong tmp = 0;
-            int status;
-
-            return this.PerformStore(mode, key, value, MemcachedClient.GetExpiration(validFor), ref tmp, out status).Success;
+            return await this.PerformStoreAsync(mode, key, value, GetExpiration(validUntil), cas).ConfigureAwait(false);
         }
-
-        public async Task<bool> StoreAsync(StoreMode mode, string key, object value, TimeSpan validFor)
-        {
-            return (await this.PerformStoreAsync(mode, key, value, MemcachedClient.GetExpiration(validFor))).Success;
-        }
-
-        /// <summary>
-        /// Inserts an item into the cache with a cache key to reference its location.
-        /// </summary>
-        /// <param name="mode">Defines how the item is stored in the cache.</param>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="value">The object to be inserted into the cache.</param>
-        /// <param name="expiresAt">The time when the item is invalidated in the cache.</param>
-        /// <returns>true if the item was successfully stored in the cache; false otherwise.</returns>
-        public bool Store(StoreMode mode, string key, object value, DateTime expiresAt)
-        {
-            ulong tmp = 0;
-            int status;
-
-            return this.PerformStore(mode, key, value, MemcachedClient.GetExpiration(expiresAt), ref tmp, out status).Success;
-        }
-
-        /// <summary>
-        /// Inserts an item into the cache with a cache key to reference its location and returns its version.
-        /// </summary>
-        /// <param name="mode">Defines how the item is stored in the cache.</param>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="value">The object to be inserted into the cache.</param>
-        /// <remarks>The item does not expire unless it is removed due memory pressure.</remarks>
-        /// <returns>A CasResult object containing the version of the item and the result of the operation (true if the item was successfully stored in the cache; false otherwise).</returns>
-        public CasResult<bool> Cas(StoreMode mode, string key, object value, ulong cas)
-        {
-            var result = this.PerformStore(mode, key, value, 0, cas);
-            return new CasResult<bool> { Cas = result.Cas, Result = result.Success, StatusCode = result.StatusCode.Value };
-
-        }
-
-        /// <summary>
-        /// Inserts an item into the cache with a cache key to reference its location and returns its version.
-        /// </summary>
-        /// <param name="mode">Defines how the item is stored in the cache.</param>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="value">The object to be inserted into the cache.</param>
-        /// <param name="validFor">The interval after the item is invalidated in the cache.</param>
-        /// <param name="cas">The cas value which must match the item's version.</param>
-        /// <returns>A CasResult object containing the version of the item and the result of the operation (true if the item was successfully stored in the cache; false otherwise).</returns>
-        public CasResult<bool> Cas(StoreMode mode, string key, object value, TimeSpan validFor, ulong cas)
-        {
-            var result = this.PerformStore(mode, key, value, MemcachedClient.GetExpiration(validFor), cas);
-            return new CasResult<bool> { Cas = result.Cas, Result = result.Success, StatusCode = result.StatusCode.Value };
-        }
-
-        /// <summary>
-        /// Inserts an item into the cache with a cache key to reference its location and returns its version.
-        /// </summary>
-        /// <param name="mode">Defines how the item is stored in the cache.</param>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="value">The object to be inserted into the cache.</param>
-        /// <param name="expiresAt">The time when the item is invalidated in the cache.</param>
-        /// <param name="cas">The cas value which must match the item's version.</param>
-        /// <returns>A CasResult object containing the version of the item and the result of the operation (true if the item was successfully stored in the cache; false otherwise).</returns>
-        public CasResult<bool> Cas(StoreMode mode, string key, object value, DateTime expiresAt, ulong cas)
-        {
-            var result = this.PerformStore(mode, key, value, MemcachedClient.GetExpiration(expiresAt), cas);
-            return new CasResult<bool> { Cas = result.Cas, Result = result.Success, StatusCode = result.StatusCode.Value };
-        }
-
-        /// <summary>
-        /// Inserts an item into the cache with a cache key to reference its location and returns its version.
-        /// </summary>
-        /// <param name="mode">Defines how the item is stored in the cache.</param>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="value">The object to be inserted into the cache.</param>
-        /// <remarks>The item does not expire unless it is removed due memory pressure. The text protocol does not support this operation, you need to Store then GetWithCas.</remarks>
-        /// <returns>A CasResult object containing the version of the item and the result of the operation (true if the item was successfully stored in the cache; false otherwise).</returns>
-        public CasResult<bool> Cas(StoreMode mode, string key, object value)
-        {
-            var result = this.PerformStore(mode, key, value, 0, 0);
-            return new CasResult<bool> { Cas = result.Cas, Result = result.Success, StatusCode = result.StatusCode.Value };
-        }
-
-        private IStoreOperationResult PerformStore(StoreMode mode, string key, object value, uint expires, ulong cas)
-        {
-            ulong tmp = cas;
-            int status;
-
-            var retval = this.PerformStore(mode, key, value, expires, ref tmp, out status);
-            retval.StatusCode = status;
-
-            if (retval.Success)
-            {
-                retval.Cas = tmp;
-            }
-            return retval;
-        }
-
-        protected virtual IStoreOperationResult PerformStore(StoreMode mode, string key, object value, uint expires, ref ulong cas, out int statusCode)
-        {
-            //var hashedKey = this.keyTransformer.Transform(key);
-            var node = this.pool.Locate(key);
-            var result = StoreOperationResultFactory.Create();           
-
-            statusCode = -1;
-            
-            if (node != null)
-            {
-                CacheItem item;
-
-                try { item = this.transcoder.Serialize(value); }
-                catch (Exception e)
-                {
-                    log.Error("PerformStore", e);
-
-                    result.Fail("PerformStore failed", e);
-                    return result;
-                }
-
-                var command = this.pool.OperationFactory.Store(mode, key, item, expires, cas);
-                var commandResult = node.Execute(command);
-
-                result.Cas = cas = command.CasValue;
-                result.StatusCode = statusCode = command.StatusCode;
-
-                if (commandResult.Success)
-                {
-                    result.Pass();
-                    return result;
-                }
-
-                commandResult.Combine(result);
-                return result;
-            }
-
-            //if (this.performanceMonitor != null) this.performanceMonitor.Store(mode, 1, false);
-
-            result.Fail("Unable to locate node");
-            return result;
-        }
-
-        protected async virtual Task<IStoreOperationResult> PerformStoreAsync(StoreMode mode, string key, object value, uint expires)
+        protected async Task<IStoreOperationResult> PerformStoreAsync(StoreMode mode, string key, object value, uint expires, ulong? cas)
         {
             var node = this.pool.Locate(key);
             var result = StoreOperationResultFactory.Create();
-
-            int statusCode = -1;
-            ulong cas = 0;
-            if (value == null)
-            {
-                result.Fail("value is null");
-                return result;
-            }
+            
+            //if (value == null)
+            //{
+            //    result.Fail("value is null");
+            //    return result;
+            //}
 
             if (node != null)
             {
                 CacheItem item;
 
-                try { item = this.transcoder.Serialize(value); }
+                try
+                {
+                    item = this.transcoder.Serialize(value);
+                }
                 catch (Exception e)
                 {
                     log.Error("PerformStoreAsync", e);
@@ -334,11 +171,11 @@ namespace Enyim.Caching
                     return result;
                 }
 
-                var command = this.pool.OperationFactory.Store(mode, key, item, expires, cas);
+                var command = this.pool.OperationFactory.Store(mode, key, item, expires, cas ?? 0);
                 var commandResult = await node.ExecuteAsync(command);
 
-                result.Cas = cas = command.CasValue;
-                result.StatusCode = statusCode = command.StatusCode;
+                result.Cas = command.CasValue;
+                result.StatusCode = command.StatusCode;
 
                 if (commandResult.Success)
                 {
@@ -355,25 +192,12 @@ namespace Enyim.Caching
             result.Fail("Unable to locate memcached node");
             return result;
         }
-
-        #endregion
+        
         #region [ Mutate                       ]
 
         #region [ Increment                    ]
 
-        /// <summary>
-        /// Increments the value of the specified key by the given amount. The operation is atomic and happens on the server.
-        /// </summary>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="defaultValue">The value which will be stored by the server if the specified item was not found.</param>
-        /// <param name="delta">The amount by which the client wants to increase the item.</param>
-        /// <returns>The new value of the item or defaultValue if the key was not found.</returns>
-        /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
-        public ulong Increment(string key, ulong defaultValue, ulong delta)
-        {
-            return this.PerformMutate(MutationMode.Increment, key, defaultValue, delta, 0).Value;
-        }
-
+    
         /// <summary>
         /// Increments the value of the specified key by the given amount. The operation is atomic and happens on the server.
         /// </summary>
@@ -383,9 +207,9 @@ namespace Enyim.Caching
         /// <param name="validFor">The interval after the item is invalidated in the cache.</param>
         /// <returns>The new value of the item or defaultValue if the key was not found.</returns>
         /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
-        public ulong Increment(string key, ulong defaultValue, ulong delta, TimeSpan validFor)
+        public Task<IMutateOperationResult> IncrementAsync(string key, ulong defaultValue, ulong delta, TimeSpan? validFor, ulong? cas)
         {
-            return this.PerformMutate(MutationMode.Increment, key, defaultValue, delta, MemcachedClient.GetExpiration(validFor)).Value;
+            return this.PerformMutateAsync(MutationMode.Increment, key, defaultValue, delta, MemcachedClient.GetExpiration(validFor), cas);
         }
 
         /// <summary>
@@ -397,74 +221,16 @@ namespace Enyim.Caching
         /// <param name="expiresAt">The time when the item is invalidated in the cache.</param>
         /// <returns>The new value of the item or defaultValue if the key was not found.</returns>
         /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
-        public ulong Increment(string key, ulong defaultValue, ulong delta, DateTime expiresAt)
+        public Task<IMutateOperationResult> IncrementAsync(string key, ulong defaultValue, ulong delta, DateTime? expiresAt, ulong? cas)
         {
-            return this.PerformMutate(MutationMode.Increment, key, defaultValue, delta, MemcachedClient.GetExpiration(expiresAt)).Value;
+            return this.PerformMutateAsync(MutationMode.Increment, key, defaultValue, delta, MemcachedClient.GetExpiration(expiresAt), cas);
         }
 
-        /// <summary>
-        /// Increments the value of the specified key by the given amount, but only if the item's version matches the CAS value provided. The operation is atomic and happens on the server.
-        /// </summary>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="defaultValue">The value which will be stored by the server if the specified item was not found.</param>
-        /// <param name="delta">The amount by which the client wants to increase the item.</param>
-        /// <param name="cas">The cas value which must match the item's version.</param>
-        /// <returns>The new value of the item or defaultValue if the key was not found.</returns>
-        /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
-        public CasResult<ulong> Increment(string key, ulong defaultValue, ulong delta, ulong cas)
-        {
-            var result = this.CasMutate(MutationMode.Increment, key, defaultValue, delta, 0, cas);
-            return new CasResult<ulong> { Cas = result.Cas, Result = result.Value, StatusCode = result.StatusCode.Value };
-        }
-
-        /// <summary>
-        /// Increments the value of the specified key by the given amount, but only if the item's version matches the CAS value provided. The operation is atomic and happens on the server.
-        /// </summary>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="defaultValue">The value which will be stored by the server if the specified item was not found.</param>
-        /// <param name="delta">The amount by which the client wants to increase the item.</param>
-        /// <param name="validFor">The interval after the item is invalidated in the cache.</param>
-        /// <param name="cas">The cas value which must match the item's version.</param>
-        /// <returns>The new value of the item or defaultValue if the key was not found.</returns>
-        /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
-        public CasResult<ulong> Increment(string key, ulong defaultValue, ulong delta, TimeSpan validFor, ulong cas)
-        {
-            var result = this.CasMutate(MutationMode.Increment, key, defaultValue, delta, MemcachedClient.GetExpiration(validFor), cas);
-            return new CasResult<ulong> { Cas = result.Cas, Result = result.Value, StatusCode = result.StatusCode.Value };
-        }
-
-        /// <summary>
-        /// Increments the value of the specified key by the given amount, but only if the item's version matches the CAS value provided. The operation is atomic and happens on the server.
-        /// </summary>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="defaultValue">The value which will be stored by the server if the specified item was not found.</param>
-        /// <param name="delta">The amount by which the client wants to increase the item.</param>
-        /// <param name="expiresAt">The time when the item is invalidated in the cache.</param>
-        /// <param name="cas">The cas value which must match the item's version.</param>
-        /// <returns>The new value of the item or defaultValue if the key was not found.</returns>
-        /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
-        public CasResult<ulong> Increment(string key, ulong defaultValue, ulong delta, DateTime expiresAt, ulong cas)
-        {
-            var result = this.CasMutate(MutationMode.Increment, key, defaultValue, delta, MemcachedClient.GetExpiration(expiresAt), cas);
-            return new CasResult<ulong> { Cas = result.Cas, Result = result.Value, StatusCode = result.StatusCode.Value };
-        }
+       
 
         #endregion
         #region [ Decrement                    ]
-        /// <summary>
-        /// Decrements the value of the specified key by the given amount. The operation is atomic and happens on the server.
-        /// </summary>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="defaultValue">The value which will be stored by the server if the specified item was not found.</param>
-        /// <param name="delta">The amount by which the client wants to decrease the item.</param>
-        /// <returns>The new value of the item or defaultValue if the key was not found.</returns>
-        /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
-        public ulong Decrement(string key, ulong defaultValue, ulong delta)
-        {
-            return this.PerformMutate(MutationMode.Decrement, key, defaultValue, delta, 0).Value;
-        }
-
-        /// <summary>
+   
         /// Decrements the value of the specified key by the given amount. The operation is atomic and happens on the server.
         /// </summary>
         /// <param name="key">The key used to reference the item.</param>
@@ -473,9 +239,9 @@ namespace Enyim.Caching
         /// <param name="validFor">The interval after the item is invalidated in the cache.</param>
         /// <returns>The new value of the item or defaultValue if the key was not found.</returns>
         /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
-        public ulong Decrement(string key, ulong defaultValue, ulong delta, TimeSpan validFor)
+        public Task<IMutateOperationResult> DecrementAsync(string key, ulong defaultValue, ulong delta, TimeSpan? validFor, ulong? cas)
         {
-            return this.PerformMutate(MutationMode.Decrement, key, defaultValue, delta, MemcachedClient.GetExpiration(validFor)).Value;
+            return this.PerformMutateAsync(MutationMode.Decrement, key, defaultValue, delta, MemcachedClient.GetExpiration(validFor), cas);
         }
 
         /// <summary>
@@ -487,76 +253,17 @@ namespace Enyim.Caching
         /// <param name="expiresAt">The time when the item is invalidated in the cache.</param>
         /// <returns>The new value of the item or defaultValue if the key was not found.</returns>
         /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
-        public ulong Decrement(string key, ulong defaultValue, ulong delta, DateTime expiresAt)
+        public Task<IMutateOperationResult> DecrementAsync(string key, ulong defaultValue, ulong delta, DateTime? expiresAt, ulong? cas)
         {
-            return this.PerformMutate(MutationMode.Decrement, key, defaultValue, delta, MemcachedClient.GetExpiration(expiresAt)).Value;
+            return this.PerformMutateAsync(MutationMode.Decrement, key, defaultValue, delta, MemcachedClient.GetExpiration(expiresAt), cas);
         }
 
-        /// <summary>
-        /// Decrements the value of the specified key by the given amount, but only if the item's version matches the CAS value provided. The operation is atomic and happens on the server.
-        /// </summary>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="defaultValue">The value which will be stored by the server if the specified item was not found.</param>
-        /// <param name="delta">The amount by which the client wants to decrease the item.</param>
-        /// <param name="cas">The cas value which must match the item's version.</param>
-        /// <returns>The new value of the item or defaultValue if the key was not found.</returns>
-        /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
-        public CasResult<ulong> Decrement(string key, ulong defaultValue, ulong delta, ulong cas)
-        {
-            var result = this.CasMutate(MutationMode.Decrement, key, defaultValue, delta, 0, cas);
-            return new CasResult<ulong> { Cas = result.Cas, Result = result.Value, StatusCode = result.StatusCode.Value };
-        }
-
-        /// <summary>
-        /// Decrements the value of the specified key by the given amount, but only if the item's version matches the CAS value provided. The operation is atomic and happens on the server.
-        /// </summary>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="defaultValue">The value which will be stored by the server if the specified item was not found.</param>
-        /// <param name="delta">The amount by which the client wants to decrease the item.</param>
-        /// <param name="validFor">The interval after the item is invalidated in the cache.</param>
-        /// <param name="cas">The cas value which must match the item's version.</param>
-        /// <returns>The new value of the item or defaultValue if the key was not found.</returns>
-        /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
-        public CasResult<ulong> Decrement(string key, ulong defaultValue, ulong delta, TimeSpan validFor, ulong cas)
-        {
-            var result = this.CasMutate(MutationMode.Decrement, key, defaultValue, delta, MemcachedClient.GetExpiration(validFor), cas);
-            return new CasResult<ulong> { Cas = result.Cas, Result = result.Value, StatusCode = result.StatusCode.Value };
-        }
-
-        /// <summary>
-        /// Decrements the value of the specified key by the given amount, but only if the item's version matches the CAS value provided. The operation is atomic and happens on the server.
-        /// </summary>
-        /// <param name="key">The key used to reference the item.</param>
-        /// <param name="defaultValue">The value which will be stored by the server if the specified item was not found.</param>
-        /// <param name="delta">The amount by which the client wants to decrease the item.</param>
-        /// <param name="expiresAt">The time when the item is invalidated in the cache.</param>
-        /// <param name="cas">The cas value which must match the item's version.</param>
-        /// <returns>The new value of the item or defaultValue if the key was not found.</returns>
-        /// <remarks>If the client uses the Text protocol, the item must be inserted into the cache before it can be changed. It must be inserted as a <see cref="T:System.String"/>. Moreover the Text protocol only works with <see cref="System.UInt32"/> values, so return value -1 always indicates that the item was not found.</remarks>
-        public CasResult<ulong> Decrement(string key, ulong defaultValue, ulong delta, DateTime expiresAt, ulong cas)
-        {
-            var result = this.CasMutate(MutationMode.Decrement, key, defaultValue, delta, MemcachedClient.GetExpiration(expiresAt), cas);
-            return new CasResult<ulong> { Cas = result.Cas, Result = result.Value, StatusCode = result.StatusCode.Value };
-        }
+       
 
         #endregion
 
-        private IMutateOperationResult PerformMutate(MutationMode mode, string key, ulong defaultValue, ulong delta, uint expires)
-        {
-            ulong tmp = 0;
-
-            return PerformMutate(mode, key, defaultValue, delta, expires, ref tmp);
-        }
-
-        private IMutateOperationResult CasMutate(MutationMode mode, string key, ulong defaultValue, ulong delta, uint expires, ulong cas)
-        {
-            var tmp = cas;
-            var retval = PerformMutate(mode, key, defaultValue, delta, expires, ref tmp);
-            retval.Cas = tmp;
-            return retval;
-        }
-
-        protected virtual IMutateOperationResult PerformMutate(MutationMode mode, string key, ulong defaultValue, ulong delta, uint expires, ref ulong cas)
+    
+        protected async Task<IMutateOperationResult> PerformMutateAsync(MutationMode mode, string key, ulong defaultValue, ulong delta, uint expires, ulong? cas)
         {
             var hashedKey = this.keyTransformer.Transform(key);
             var node = this.pool.Locate(hashedKey);
@@ -564,10 +271,10 @@ namespace Enyim.Caching
 
             if (node != null)
             {
-                var command = this.pool.OperationFactory.Mutate(mode, hashedKey, defaultValue, delta, expires, cas);
-                var commandResult = node.Execute(command);
+                var command = this.pool.OperationFactory.Mutate(mode, hashedKey, defaultValue, delta, expires, cas ?? 0);
+                var commandResult = await node.ExecuteAsync(command).ConfigureAwait(false);
 
-                result.Cas = cas = command.CasValue;
+                result.Cas = command.CasValue;
                 result.StatusCode = command.StatusCode;
 
                 if (commandResult.Success)
@@ -735,110 +442,33 @@ namespace Enyim.Caching
 
             return new ServerStats(results);
         }
-
-        /// <summary>
-        /// Removes the specified item from the cache.
-        /// </summary>
-        /// <param name="key">The identifier for the item to delete.</param>
-        /// <returns>true if the item was successfully removed from the cache; false otherwise.</returns>
-        public bool Remove(string key)
+        
+        public async Task<IRemoveOperationResult> RemoveAsync(string key)
         {
-            return ExecuteRemove(key).Success;
-        }
+            var node = this.pool.Locate(key);
+            var result = RemoveOperationResultFactory.Create();
 
-        //TODO: Not Implement
-        public async Task<bool> RemoveAsync(string key)
-        {
-            return (await ExecuteRemoveAsync(key)).Success;
-        }
-
-        /// <summary>
-        /// Retrieves multiple items from the cache.
-        /// </summary>
-        /// <param name="keys">The list of identifiers for the items to retrieve.</param>
-        /// <returns>a Dictionary holding all items indexed by their key.</returns>
-        //public IDictionary<string, object> Get(IEnumerable<string> keys)
-        //{
-        //    return PerformMultiGet<object>(keys, (mget, kvp) => this.transcoder.Deserialize(kvp.Value));
-        //}
-
-        //public IDictionary<string, CasResult<object>> GetWithCas(IEnumerable<string> keys)
-        //{
-        //    return PerformMultiGet<CasResult<object>>(keys, (mget, kvp) => new CasResult<object>
-        //    {
-        //        Result = this.transcoder.Deserialize(kvp.Value),
-        //        Cas = mget.Cas[kvp.Key]
-        //    });
-        //}
-
-        //protected virtual IDictionary<string, T> PerformMultiGet<T>(IEnumerable<string> keys, Func<IMultiGetOperation, KeyValuePair<string, CacheItem>, T> collector)
-        //{
-        //    // transform the keys and index them by hashed => original
-        //    // the mget results will be mapped using this index
-        //    var hashed = new Dictionary<string, string>();
-        //    foreach (var key in keys) hashed[this.keyTransformer.Transform(key)] = key;
-
-        //    var byServer = GroupByServer(hashed.Keys);
-
-        //    var retval = new Dictionary<string, T>(hashed.Count);
-
-        //    //execute each list of keys on their respective node
-
-        //    Parallel.ForEach(byServer, slice =>
-        //    {
-        //                                try
-        //                                {
-        //                                    var node = slice.Key;
-
-        //                                   var nodeKeys = slice.Value;
-        //                                   var mget = this.pool.OperationFactory.MultiGet(nodeKeys);
-                                           
-        //                                   var opResult = node.Execute(mget);
-        //                                   if (opResult.Success)
-        //                                   {
-        //                                       // deserialize the items in the dictionary
-        //                                       foreach (var kvp in mget.Result)
-        //                                       {
-        //                                           string original;
-        //                                           if (hashed.TryGetValue(kvp.Key, out original))
-        //                                           {
-        //                                               var result = collector(mget, kvp);
-
-        //                                               // the lock will serialize the merge,
-        //                                               // but at least the commands were not waiting on each other
-        //                                               lock (retval)
-        //                                                   retval[original] = result;
-        //                                           }
-        //                                       }
-        //                                   }
-        //                                }
-        //                                catch (Exception e)
-        //                                {
-        //                                    log.Error("PerformMultiGet", e);
-        //                                }
-        //    });
-        //    return retval;
-        //}
-
-        protected Dictionary<IMemcachedNode, IList<string>> GroupByServer(IEnumerable<string> keys)
-        {
-            var retval = new Dictionary<IMemcachedNode, IList<string>>();
-
-            foreach (var k in keys)
+            if (node != null)
             {
-                var node = this.pool.Locate(k);
-                if (node == null) continue;
+                var command = this.pool.OperationFactory.Delete(key, 0);
+                var commandResult = await node.ExecuteAsync(command);
 
-                IList<string> list;
-                if (!retval.TryGetValue(node, out list))
-                    retval[node] = list = new List<string>(4);
+                if (commandResult.Success)
+                {
+                    result.Pass();
+                }
+                else
+                {
+                    result.InnerResult = commandResult;
+                    result.Fail("Failed to remove item, see InnerResult or StatusCode for details");
+                }
 
-                list.Add(k);
+                return result;
             }
 
-            return retval;
+            result.Fail("Unable to locate memcached node");
+            return result;
         }
-
         /// <summary>
         /// Waits for all WaitHandles and works in both STA and MTA mode.
         /// </summary>
@@ -866,30 +496,30 @@ namespace Enyim.Caching
         protected const int MaxSeconds = 60 * 60 * 24 * 30;
         protected static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1);
 
-        protected static uint GetExpiration(TimeSpan validFor)
+        protected static uint GetExpiration(TimeSpan? validFor)
         {
             // convert timespans to absolute dates
             // infinity
-            if (validFor == TimeSpan.Zero || validFor == TimeSpan.MaxValue)
+            if (!validFor.HasValue)
                 return 0;
 
-            uint seconds = (uint)validFor.TotalSeconds;
+            uint seconds = (uint)validFor.Value.TotalSeconds;
             if (seconds > MaxSeconds)
-                return GetExpiration(DateTime.Now.Add(validFor));
+                return GetExpiration(DateTime.Now.Add(validFor.Value));
 
             return seconds;
         }
 
-        protected static uint GetExpiration(DateTime expiresAt)
+        protected static uint GetExpiration(DateTime? expiresAt)
         {
+            if (expiresAt == null)
+                return 0;
+
             if (expiresAt < UnixEpoch)
                 throw new ArgumentOutOfRangeException("expiresAt", "expiresAt must be >= 1970/1/1");
 
-            if (expiresAt == DateTime.MaxValue)
-                return 0;
 
-            uint retval = (uint)(expiresAt.ToUniversalTime() - UnixEpoch).TotalSeconds;
-
+            uint retval = (uint)(expiresAt.Value.ToUniversalTime() - UnixEpoch).TotalSeconds;
             return retval;
         }
         #endregion

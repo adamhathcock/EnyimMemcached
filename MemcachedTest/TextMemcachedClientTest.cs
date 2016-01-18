@@ -19,27 +19,27 @@ namespace MemcachedTest
 		}
 
 		[Fact]
-		public void IncrementTest()
+		public async Task IncrementTest()
 		{
 			using (MemcachedClient client = GetClient())
 			{
-				Assert.True(client.Store(StoreMode.Set, "VALUE", "100"), "Initialization failed");
+				Assert.True((await client.StoreAsync(StoreMode.Set, "VALUE", "100")).Success, "Initialization failed");
 
-				Assert.Equal(102UL, client.Increment("VALUE", 0, 2));
-				Assert.Equal(112UL, client.Increment("VALUE", 0, 10));
+				Assert.Equal(102UL, (await client.IncrementAsync("VALUE", 0, 2)).Value);
+				Assert.Equal(112UL, (await client.IncrementAsync("VALUE", 0, 10)).Value);
 			}
 		}
 
 		[Fact]
-		public void DecrementTest()
+		public async Task DecrementTest()
 		{
 			using (MemcachedClient client = GetClient())
 			{
-				client.Store(StoreMode.Set, "VALUE", "100");
+                await client.StoreAsync(StoreMode.Set, "VALUE", "100");
 
-				Assert.Equal(98UL, client.Decrement("VALUE", 0, 2));
-				Assert.Equal(88UL, client.Decrement("VALUE", 0, 10));
-			}
+				Assert.Equal(98UL, (await client.DecrementAsync("VALUE", 0, 2)).Value);
+                Assert.Equal(88UL, (await client.DecrementAsync("VALUE", 0, 10)).Value);
+            }
 		}
 
 		[Fact]
@@ -48,9 +48,9 @@ namespace MemcachedTest
 			using (MemcachedClient client = GetClient())
 			{
 				// store the item
-				var r1 = client.Store(StoreMode.Set, "CasItem1", "foo");
+				var r1 = await client.StoreAsync(StoreMode.Set, "CasItem1", "foo");
 
-				Assert.True(r1, "Initial set failed.");
+				Assert.True(r1.Success, "Initial set failed.");
 
 				// get back the item and check the cas value (it should match the cas from the set)
 				var r2 = await client.GetAsync<string>("CasItem1");
@@ -58,13 +58,13 @@ namespace MemcachedTest
 				Assert.Equal(r2.Value, "foo");
 				Assert.NotEqual(0UL, r2.Cas);
 
-				var r3 = client.Cas(StoreMode.Set, "CasItem1", "bar", r2.Cas - 1);
+				var r3 = await client.StoreAsync(StoreMode.Set, "CasItem1", "bar", r2.Cas - 1);
 
-				Assert.False(r3.Result, "foo");
+				Assert.False(r3.Success, "foo");
 
-				var r4 = client.Cas(StoreMode.Set, "CasItem1", "baz", r2.Cas);
+				var r4 = await  client.StoreAsync(StoreMode.Set, "CasItem1", "baz", r2.Cas);
 
-				Assert.True(r4.Result, "Overwriting with 'baz' should have succeeded.");
+				Assert.True(r4.Success, "Overwriting with 'baz' should have succeeded.");
                 
                 var r5 = await client.GetAsync<string>("CasItem1");
                 Assert.Equal(r5.Value, "baz");

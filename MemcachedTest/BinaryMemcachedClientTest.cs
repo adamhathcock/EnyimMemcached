@@ -23,24 +23,24 @@ namespace MemcachedTest
         }
 
         [Fact]
-        public void IncrementTest()
+        public async Task IncrementTest()
         {
             using (MemcachedClient client = GetClient())
             {
-                Assert.Equal(100, (int)client.Increment("VALUE", 100, 2));
-                Assert.Equal(124, (int)client.Increment("VALUE", 10, 24));
+                Assert.Equal(100, (int)(await client.IncrementAsync("VALUE", 100, 2)).Value);
+                Assert.Equal(124, (int)(await client.IncrementAsync("VALUE", 10, 24)).Value);
             }
         }
 
         [Fact]
-        public void DecrementTest()
+        public async Task DecrementTest()
         {
             using (MemcachedClient client = GetClient())
             {
-                Assert.Equal(100, (int)client.Decrement("VALUE", 100, 2));
-                Assert.Equal(76, (int)client.Decrement("VALUE", 10, 24));
+                Assert.Equal(100, (int)(await client.DecrementAsync("VALUE", 100, 2)).Value);
+                Assert.Equal(76, (int)(await client.DecrementAsync("VALUE", 10, 24)).Value);
 
-                Assert.Equal(0, (int)client.Decrement("VALUE", 100, 1000));
+                Assert.Equal(0, (int)(await client.DecrementAsync("VALUE", 100, 1000)).Value);
             }
         }
 
@@ -51,7 +51,7 @@ namespace MemcachedTest
             {
                 Assert.Null((await client.GetAsync<string>("VALUE")).Value);
 
-                Assert.Equal(2, (int)client.Increment("VALUE", 2, 2));
+                Assert.Equal(2, (int)(await client.IncrementAsync("VALUE", 2, 2)).Value);
 
                 var value = await client.GetAsync<string>("VALUE");
                 Assert.Equal("2", value.Value);
@@ -64,9 +64,9 @@ namespace MemcachedTest
             using (MemcachedClient client = GetClient())
             {
                 // store the item
-                var r1 = client.Cas(StoreMode.Set, "CasItem1", "foo");
+                var r1 = await client.StoreAsync(StoreMode.Set, "CasItem1", "foo");
 
-                Assert.True(r1.Result, "Initial set failed.");
+                Assert.True(r1.Success, "Initial set failed.");
                 Assert.NotEqual(r1.Cas, (ulong)0);
 
                 // get back the item and check the cas value (it should match the cas from the set)
@@ -75,13 +75,13 @@ namespace MemcachedTest
                 Assert.Equal(r2.Value, "foo");
                 Assert.Equal(r1.Cas, r2.Cas);
 
-                var r3 = client.Cas(StoreMode.Set, "CasItem1", "bar", r1.Cas - 1);
+                var r3 = await client.StoreAsync(StoreMode.Set, "CasItem1", "bar", r1.Cas - 1);
 
-                Assert.False(r3.Result,  "Overwriting with 'bar' should have failed.");
+                Assert.False(r3.Success,  "Overwriting with 'bar' should have failed.");
 
-                var r4 = client.Cas(StoreMode.Set, "CasItem1", "baz", r2.Cas);
+                var r4 = await client.StoreAsync(StoreMode.Set, "CasItem1", "baz", r2.Cas);
 
-                Assert.True(r4.Result, "Overwriting with 'baz' should have succeeded.");
+                Assert.True(r4.Success, "Overwriting with 'baz' should have succeeded.");
                 
                 var r5 = await client.GetAsync<string>("CasItem1");
                 Assert.Equal(r5.Value, "baz");
@@ -94,9 +94,9 @@ namespace MemcachedTest
             using (MemcachedClient client = GetClient())
             {
                 // store the item
-                var r1 = client.Cas(StoreMode.Set, "CasAppend", "foo");
+                var r1 = await client.StoreAsync(StoreMode.Set, "CasAppend", "foo");
 
-                Assert.True(r1.Result, "Initial set failed.");
+                Assert.True(r1.Success, "Initial set failed.");
                 Assert.NotEqual(r1.Cas, (ulong)0);
 
                 var r2 = client.Append("CasAppend", r1.Cas, new System.ArraySegment<byte>(new byte[] { (byte)'l' }));
@@ -120,9 +120,9 @@ namespace MemcachedTest
             using (MemcachedClient client = GetClient())
             {
                 // store the item
-                var r1 = client.Cas(StoreMode.Set, "CasPrepend", "ool");
+                var r1 = await client.StoreAsync(StoreMode.Set, "CasPrepend", "ool");
 
-                Assert.True(r1.Result, "Initial set failed.");
+                Assert.True(r1.Success, "Initial set failed.");
                 Assert.NotEqual(r1.Cas, (ulong)0);
 
                 var r2 = client.Prepend("CasPrepend", r1.Cas, new System.ArraySegment<byte>(new byte[] { (byte)'f' }));

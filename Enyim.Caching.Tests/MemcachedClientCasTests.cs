@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Enyim.Caching.Memcached;
 using Enyim.Caching.Memcached.Results;
 using Xunit;
@@ -13,26 +14,26 @@ namespace Enyim.Caching.Tests
 	{
 
 		[Fact]
-		public void When_Storing_Item_With_Valid_Cas_Result_Is_Successful()
+		public async Task When_Storing_Item_With_Valid_Cas_Result_Is_Successful()
 		{
 			var key = GetUniqueKey("cas");
 			var value = GetRandomString();
-			var storeResult = Store(StoreMode.Add, key, value);
+			var storeResult = await Store(StoreMode.Add, key, value);
 			StoreAssertPass(storeResult);
 
-			var casResult = _Client.ExecuteCas(StoreMode.Set, key, value, storeResult.Cas);
+			var casResult = await _Client.StoreAsync(StoreMode.Set, key, value, storeResult.Cas);
 			StoreAssertPass(casResult);
 		}
 
 		[Fact]
-		public void When_Storing_Item_With_Invalid_Cas_Result_Is_Not_Successful()
+		public async Task When_Storing_Item_With_Invalid_Cas_Result_Is_Not_Successful()
 		{
 			var key = GetUniqueKey("cas");
 			var value = GetRandomString();
-			var storeResult = Store(StoreMode.Add, key, value);
+			var storeResult = await Store(StoreMode.Add, key, value);
 			StoreAssertPass(storeResult);
 
-			var casResult = _Client.ExecuteCas(StoreMode.Set, key, value, storeResult.Cas - 1);
+			var casResult =  await _Client.StoreAsync(StoreMode.Set, key, value, storeResult.Cas - 1);
 			StoreAssertFail(casResult);
 		}
 

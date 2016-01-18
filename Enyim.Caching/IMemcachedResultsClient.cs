@@ -1,39 +1,15 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Enyim.Caching.Memcached;
 using Enyim.Caching.Memcached.Results;
 
 namespace Enyim.Caching
 {
-	/// <summary>
-	/// Interface for API methods that return detailed operation results
-	/// </summary>
-	public interface IMemcachedResultsClient
+    /// <summary>
+    /// Interface for API methods that return detailed operation results
+    /// </summary>
+    public interface IMemcachedResultsClient
 	{
-		IStoreOperationResult ExecuteStore(StoreMode mode, string key, object value);
-		IStoreOperationResult ExecuteStore(StoreMode mode, string key, object value, DateTime expiresAt);
-		IStoreOperationResult ExecuteStore(StoreMode mode, string key, object value, TimeSpan validFor);
-
-		IStoreOperationResult ExecuteCas(StoreMode mode, string key, object value);
-		IStoreOperationResult ExecuteCas(StoreMode mode, string key, object value, ulong cas);
-		IStoreOperationResult ExecuteCas(StoreMode mode, string key, object value, DateTime expiresAt, ulong cas);
-		IStoreOperationResult ExecuteCas(StoreMode mode, string key, object value, TimeSpan validFor, ulong cas);
-
-		IMutateOperationResult ExecuteDecrement(string key, ulong defaultValue, ulong delta);
-		IMutateOperationResult ExecuteDecrement(string key, ulong defaultValue, ulong delta, DateTime expiresAt);
-		IMutateOperationResult ExecuteDecrement(string key, ulong defaultValue, ulong delta, TimeSpan validFor);
-
-		IMutateOperationResult ExecuteDecrement(string key, ulong defaultValue, ulong delta, ulong cas);
-		IMutateOperationResult ExecuteDecrement(string key, ulong defaultValue, ulong delta, DateTime expiresAt, ulong cas);
-		IMutateOperationResult ExecuteDecrement(string key, ulong defaultValue, ulong delta, TimeSpan validFor, ulong cas);
-		
-		IMutateOperationResult ExecuteIncrement(string key, ulong defaultValue, ulong delta);
-		IMutateOperationResult ExecuteIncrement(string key, ulong defaultValue, ulong delta, DateTime expiresAt);
-		IMutateOperationResult ExecuteIncrement(string key, ulong defaultValue, ulong delta, TimeSpan validFor);
-
-		IMutateOperationResult ExecuteIncrement(string key, ulong defaultValue, ulong delta, ulong cas);
-		IMutateOperationResult ExecuteIncrement(string key, ulong defaultValue, ulong delta, DateTime expiresAt, ulong cas);
-		IMutateOperationResult ExecuteIncrement(string key, ulong defaultValue, ulong delta, TimeSpan validFor, ulong cas);
-
 		IConcatOperationResult ExecuteAppend(string key, ArraySegment<byte> data);
 		IConcatOperationResult ExecuteAppend(string key, ulong cas, ArraySegment<byte> data);
 		

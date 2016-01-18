@@ -15,7 +15,7 @@ namespace Enyim.Caching.Tests
 			var key = GetUniqueKey("concat");
 			var value = GetRandomString();
 
-			var storeResult = Store(key: key);
+			var storeResult = await Store(key: key);
 			StoreAssertPass(storeResult);
 
 			var toAppend = "The End";
@@ -49,7 +49,7 @@ namespace Enyim.Caching.Tests
 			var key = GetUniqueKey("concat");
 			var value = GetRandomString();
 
-			var storeResult = Store(key: key);
+			var storeResult = await Store(key: key);
 			StoreAssertPass(storeResult);
 
 			var toPrepend = "The Beginning";
@@ -83,7 +83,7 @@ namespace Enyim.Caching.Tests
 			var key = GetUniqueKey("concat");
 			var value = GetRandomString();
 
-			var storeResult = Store(key: key);
+			var storeResult = await Store(key: key);
 			StoreAssertPass(storeResult);
 
 			var toAppend = "The End";
@@ -97,12 +97,12 @@ namespace Enyim.Caching.Tests
 		}
 
 		[Fact]
-		public void When_Appending_To_Existing_Value_Result_Is_Not_Successful_With_Invalid_Cas()
+		public async Task When_Appending_To_Existing_Value_Result_Is_Not_Successful_With_Invalid_Cas()
 		{
 			var key = GetUniqueKey("concat");
 			var value = GetRandomString();
 
-			var storeResult = Store(key: key);
+			var storeResult = await Store(key: key);
 			StoreAssertPass(storeResult);
 
 			var toAppend = "The End";
@@ -117,7 +117,7 @@ namespace Enyim.Caching.Tests
 			var key = GetUniqueKey("concat");
 			var value = GetRandomString();
 
-			var storeResult = Store(key: key);
+			var storeResult = await Store(key: key);
 			StoreAssertPass(storeResult);
 
 			var tpPrepend = "The Beginning";
@@ -131,12 +131,12 @@ namespace Enyim.Caching.Tests
 		}
 
 		[Fact]
-		public void When_Prepending_To_Existing_Value_Result_Is_Not_Successful_With_Invalid_Cas()
+		public async Task When_Prepending_To_Existing_Value_Result_Is_Not_Successful_With_Invalid_Cas()
 		{
 			var key = GetUniqueKey("concat");
 			var value = GetRandomString();
 
-			var storeResult = Store(key: key);
+			var storeResult = await Store(key: key);
 			StoreAssertPass(storeResult);
 
 			var tpPrepend = "The Beginning";

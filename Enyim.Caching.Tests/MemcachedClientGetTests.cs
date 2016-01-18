@@ -16,7 +16,7 @@ namespace Enyim.Caching.Tests
 		{
 			var key = GetUniqueKey("get");
 			var value = GetRandomString();
-			var storeResult = Store(key: key, value: value);
+			var storeResult = await Store(key: key, value: value);
 			StoreAssertPass(storeResult);
 
             var getResult = await _Client.GetAsync<string>(key);
@@ -38,7 +38,7 @@ namespace Enyim.Caching.Tests
 		{
 			var key = GetUniqueKey("get");
 			var value = GetRandomString();
-			var storeResult = Store(key: key, value: value);
+			var storeResult = await Store(key: key, value: value);
 			StoreAssertPass(storeResult);
 
             var getResult = await _Client.GetAsync<string>(key);
@@ -53,7 +53,7 @@ namespace Enyim.Caching.Tests
 		{
 			var key = GetUniqueKey("Get");
 			const byte expectedValue = 1;
-			Store(key: key, value: expectedValue);
+            await Store(key: key, value: expectedValue);
             var getResult = await _Client.GetAsync<byte>(key);
             GetAssertPass(getResult, expectedValue);
 		}
@@ -63,7 +63,7 @@ namespace Enyim.Caching.Tests
 		{
 			var key = GetUniqueKey("Get");
 			const sbyte expectedValue = 1;
-			Store(key: key, value: expectedValue);
+            await Store(key: key, value: expectedValue);
             var getResult = await _Client.GetAsync<sbyte>(key);
             GetAssertPass(getResult, expectedValue);
 		}

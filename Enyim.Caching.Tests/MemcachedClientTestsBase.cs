@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Enyim.Caching.Configuration;
 using Enyim.Caching.Memcached.Results;
 using Enyim.Caching.Memcached;
@@ -46,7 +47,7 @@ namespace Enyim.Caching.Tests
 			return "unit_test_value_" + rand;
 		}
 
-		protected IStoreOperationResult Store(StoreMode mode = StoreMode.Set, string key = null, object value = null)
+		protected async Task<IStoreOperationResult> Store(StoreMode mode = StoreMode.Set, string key = null, object value = null)
 		{
 			if (string.IsNullOrEmpty(key))
 			{
@@ -57,7 +58,7 @@ namespace Enyim.Caching.Tests
 			{
 				value = GetRandomString();
 			}
-			return _Client.ExecuteStore(mode, key, value);
+			return await _Client.StoreAsync(mode, key, value).ConfigureAwait(false);
 		}
 
 		protected void StoreAssertPass(IStoreOperationResult result)
