@@ -360,13 +360,18 @@ namespace Enyim.Caching
         /// </summary>
         public async Task FlushAllAsync()
         {
+            await Task.WhenAll(StartAllFlushes().ToList()).ConfigureAwait(false);
+        }
+
+        private IEnumerable<Task> StartAllFlushes()
+        {
             foreach (var node in this.pool.GetWorkingNodes())
             {
                 var command = this.pool.OperationFactory.Flush();
 
-                await node.ExecuteAsync(command).ConfigureAwait(false);
+                yield return node.ExecuteAsync(command);
             }
-        }
+        } 
 
         /// <summary>
         /// Returns statistics about the servers.
