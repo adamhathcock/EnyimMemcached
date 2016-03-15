@@ -41,7 +41,6 @@ namespace Enyim.Caching.Memcached
             var rcv = receiveTimeout == TimeSpan.MaxValue
                 ? Timeout.Infinite
                 : (int)receiveTimeout.TotalMilliseconds;
-
             socket.ReceiveTimeout = rcv;
             socket.SendTimeout = rcv;
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
